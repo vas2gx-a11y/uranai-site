@@ -626,18 +626,23 @@ function numCompatText(na, nb) {
   return `${head}「${ga.name}」と「${gb.name}」という異なるタイプ。${ga.text}あなたと、${gb.text}お相手は、違いがあるからこそ互いに新しい視点をもたらせます。`;
 }
 
+// ふたりの生年月日から相性の点数を出す（rand は続けて恋愛・友情・仕事の点数にも使う）
+function compatScore(a, b) {
+  const sa = zodiacOf(a), sb = zodiacOf(b);
+  const na = lifePathNumber(a), nb = lifePathNumber(b);
+  const el = elementCompat(sa.element, sb.element);
+  const rand = seededRandom([a, b].sort().join("|"));
+  const numBonus = na === nb ? 8 : Math.abs((na % 9) - (nb % 9)) <= 2 ? 4 : 0;
+  const score = Math.min(99, el.score + numBonus + Math.floor(rand() * 8) - 2);
+  return { sa, sb, na, nb, el, rand, score };
+}
+
 document.getElementById("compat-form").addEventListener("submit", (e) => {
   e.preventDefault();
   const a = document.getElementById("compat-a").value;
   const b = document.getElementById("compat-b").value;
-  const sa = zodiacOf(a), sb = zodiacOf(b);
-  const na = lifePathNumber(a), nb = lifePathNumber(b);
-  const el = elementCompat(sa.element, sb.element);
+  const { sa, sb, na, nb, el, rand, score } = compatScore(a, b);
   const pair = ELEMENT_PAIR[elementPairKey(sa.element, sb.element)];
-
-  const rand = seededRandom([a, b].sort().join("|"));
-  const numBonus = na === nb ? 8 : Math.abs((na % 9) - (nb % 9)) <= 2 ? 4 : 0;
-  const score = Math.min(99, el.score + numBonus + Math.floor(rand() * 8) - 2);
   const advice = score >= 85 ? "運命的な相性。一緒にいるだけで運気が高まる関係です。"
     : score >= 70 ? "良好な相性。思いやりを忘れなければ、さらに絆が深まります。"
     : "伸びしろのある相性。違いを楽しむ気持ちが関係を育てます。";
@@ -660,6 +665,66 @@ document.getElementById("compat-form").addEventListener("submit", (e) => {
     <div class="num-section"><h4>✦ ふたりへのアドバイス</h4><p>${pair.advice}</p></div>
     ${shareButtons(`【${SITE_NAME}】${sa.name}×${sb.name}の相性は${score}点でした💞`)}
   `);
+});
+
+// ---- 相性のいい生年月日を探す ----
+const ymd = (d) => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+const md = (d) => `${d.getMonth() + 1}/${d.getDate()}`;
+
+document.getElementById("match-form").addEventListener("submit", (e) => {
+  e.preventDefault();
+  const me = document.getElementById("match-birth").value;
+  const year = Number(document.getElementById("match-year").value);
+  const days = [];
+  for (let d = new Date(year, 0, 1); d.getFullYear() === year; d.setDate(d.getDate() + 1)) {
+    const date = new Date(d);
+    const c = compatScore(me, ymd(date));
+    days.push({ date, score: c.score, sign: c.sb, num: c.nb });
+  }
+
+  // ベスト生年月日：点数の高い順（同点は日付順）、同じ星座に偏らないよう各星座3日まで
+  const perSign = {};
+  const best = [...days].sort((x, y) => y.score - x.score || x.date - y.date)
+    .filter((d) => (perSign[d.sign.name] = (perSign[d.sign.name] || 0) + 1) <= 3)
+    .slice(0, 10);
+
+  // 星座ごとの期間と平均点（山羊座は年始と年末の2つの期間になる）
+  const signs = ZODIAC.map((z) => {
+    const list = days.filter((d) => d.sign === z);
+    const runs = [];
+    list.forEach((d, i) => {
+      if (i && d.date - list[i - 1].date === 864e5) runs[runs.length - 1][1] = d.date;
+      else runs.push([d.date, d.date]);
+    });
+    const avg = Math.round(list.reduce((t, d) => t + d.score, 0) / list.length);
+    return { z, avg, period: runs.map(([f, t]) => `${md(f)}〜${md(t)}`).join("・") };
+  }).sort((x, y) => y.avg - x.avg);
+
+  const mySign = zodiacOf(me);
+  show(document.getElementById("match-result"), `
+    <h3>${year}年生まれの相性ベスト10</h3>
+    <p class="sub">あなた：${mySign.symbol} ${mySign.name}・運命数${lifePathNumber(me)} ／ 日付を押すと詳しい相性を占えます</p>
+    <ol class="match-list">
+      ${best.map((d, i) => `<li><span class="match-rank">${i + 1}</span><button type="button" class="chip" data-date="${ymd(d.date)}">${d.date.getMonth() + 1}月${d.date.getDate()}日</button>
+        <span>${d.sign.symbol} ${d.sign.name}・運命数${d.num}</span><strong>${d.score}点</strong></li>`).join("")}
+    </ol>
+    <h4 class="detail-title">✦ 星座別の相性（${year}年生まれ）</h4>
+    <div class="match-signs">
+      ${signs.map((s) => `<div class="match-sign"><span>${s.z.symbol} ${s.z.name}</span><span class="sub">${s.period}</span>
+        <span class="meter-bar"><span style="width:${s.avg}%"></span></span><strong>${s.avg}点</strong></div>`).join("")}
+    </div>
+    ${shareButtons(`【${SITE_NAME}】${mySign.name}の私と相性のいい${year}年生まれの誕生日は${best[0].date.getMonth() + 1}月${best[0].date.getDate()}日でした💞`)}
+  `);
+});
+
+// 日付を押すと、上の相性占いで詳しく占う
+document.getElementById("match-result").addEventListener("click", (e) => {
+  const date = e.target.dataset.date;
+  if (!date) return;
+  document.getElementById("compat-a").value = document.getElementById("match-birth").value;
+  document.getElementById("compat-b").value = date;
+  document.getElementById("compat-form").requestSubmit();
+  document.getElementById("compat-result").scrollIntoView({ behavior: "smooth", block: "start" });
 });
 
 // ---- ルーン ----

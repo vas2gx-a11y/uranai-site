@@ -198,6 +198,15 @@
           <button class="btn" type="submit">占う</button>
         </form>
         <div class="result" id="compat-result" hidden></div>
+
+        <h3 class="sub-title">相性のいい生年月日を探す</h3>
+        <p class="lead">あなたの生年月日と、お相手の生まれ年から、相性の良い誕生日をランキングで探します。</p>
+        <form class="form" id="match-form">
+          <label>あなた <input type="date" class="birth-input" id="match-birth" required></label>
+          <label>お相手の生まれ年 <input type="number" id="match-year" min="1900" max="2100" placeholder="例：1995" required></label>
+          <button class="btn" type="submit">探す</button>
+        </form>
+        <div class="result" id="match-result" hidden></div>
       </div>
 
       <!-- ルーン -->
