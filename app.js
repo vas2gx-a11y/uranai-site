@@ -686,12 +686,21 @@ document.getElementById("match-form").addEventListener("submit", (e) => {
     days.push({ date, score: c.score, sign: c.sb, num: c.nb });
   }
 
-  // ベスト生年月日：点数の高い順（同点は自分と生まれ年が近い順→日付順）、同じ星座に偏らないよう各星座3日まで
-  const perSign = {};
-  const yearGap = (d) => Math.abs(d.date.getFullYear() - myYear);
-  const best = [...days].sort((x, y) => y.score - x.score || yearGap(x) - yearGap(y) || x.date - y.date)
-    .filter((d) => (perSign[d.sign.name] = (perSign[d.sign.name] || 0) + 1) <= 3)
-    .slice(0, 10);
+  // ベスト生年月日：点数の高い順。同点が多いので、範囲内の年に散らばるよう
+  // 同点の並びは生年月日ごとに決まった乱数で決め、1つの星座は3日まで・1つの年は1日までにする
+  const tie = seededRandom(`match|${me}`);
+  days.forEach((d) => { d.tie = tie(); });
+  const perSign = {}, perYear = {};
+  const best = [...days].sort((x, y) => y.score - x.score || x.tie - y.tie)
+    .filter((d) => {
+      const y = d.date.getFullYear();
+      if ((perSign[d.sign.name] || 0) >= 3 || (from !== to && perYear[y])) return false;
+      perSign[d.sign.name] = (perSign[d.sign.name] || 0) + 1;
+      perYear[y] = true;
+      return true;
+    })
+    .slice(0, 10)
+    .sort((x, y) => y.score - x.score || x.date - y.date);
 
   // 星座ごとの期間と平均点（山羊座は年始と年末の2つの期間になる）
   const signs = ZODIAC.map((z) => {
