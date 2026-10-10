@@ -98,13 +98,13 @@ function zodiacFortune(sign, period = "day") {
   const total = score();
   const cats = CATEGORIES.map((c) => {
     const s = score();
-    const pool = s <= 2 ? c.low : s === 3 ? c.mid : c.high;
+    const pool = c[scoreLevel(s)];
     return { label: c.label, score: s, text: pick(pool) };
   });
   return {
     total,
     cats,
-    message: pick(ZODIAC_MESSAGES),
+    message: pick(ZODIAC_MESSAGES[scoreLevel(total)]),
     color: pick(LUCKY_COLORS),
     item: pick(LUCKY_ITEMS),
     spot: pick(LUCKY_SPOTS),
