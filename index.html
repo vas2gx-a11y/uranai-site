@@ -204,7 +204,10 @@
       <div id="rune" class="panel">
         <h2>ルーン占い</h2>
         <p class="lead">古代北欧の文字「ルーン」から、今のあなたへのメッセージを受け取ります。</p>
-        <button class="btn" id="rune-draw">ルーンを引く</button>
+        <div class="rune-btns">
+          <button class="btn" id="rune-draw">1つ引く（今のメッセージ）</button>
+          <button class="btn" id="rune-draw3">3つ引く（過去・現在・未来）</button>
+        </div>
         <div class="result" id="rune-result" hidden></div>
       </div>
 
@@ -227,6 +230,7 @@
           <label>キーワード <input type="text" id="dream-word" required placeholder="例：蛇"></label>
           <button class="btn" type="submit">調べる</button>
         </form>
+        <details class="dream-index-wrap"><summary>キーワード一覧から選ぶ（68項目）</summary><div class="dream-index" id="dream-index"></div></details>
         <div class="result" id="dream-result" hidden></div>
       </div>
 
@@ -327,6 +331,7 @@
   <footer id="site-footer"></footer>
 
   <script src="/data.js"></script>
+  <script src="/data-detail.js"></script>
   <script src="/koyomi.js"></script>
   <script src="/common.js"></script>
   <script src="/app.js"></script>

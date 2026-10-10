@@ -491,6 +491,25 @@ if (shichuForm) {
 }
 
 // ---- 星座占い ----
+// 相性の良い星座：同じエレメントと、補い合うエレメント（火⇔風、地⇔水）
+const ELEMENT_FRIEND = { 火: "風", 風: "火", 地: "水", 水: "地" };
+function zodiacDetailHtml(sign) {
+  const d = ZODIAC_DETAIL[sign.name];
+  const good = ZODIAC.filter((z) => z !== sign && (z.element === sign.element || z.element === ELEMENT_FRIEND[sign.element]));
+  return `
+    <h4 class="detail-title">✦ ${sign.name}の基本性格</h4>
+    <p class="sub">守護星：${d.ruler} ／ ${sign.element}のエレメント・${d.quality} ／ キーワード：${d.keyword}</p>
+    <p>${d.desc}</p>
+    <div class="grid-2 num-features">
+      <div class="feature-box"><h5>強み</h5><ul>${d.strengths.map((t) => `<li>${t}</li>`).join("")}</ul></div>
+      <div class="feature-box"><h5>気をつけたい点</h5><ul>${d.weaknesses.map((t) => `<li>${t}</li>`).join("")}</ul></div>
+    </div>
+    <div class="num-section"><h4>✦ 恋愛傾向</h4><p>${d.love}</p></div>
+    <div class="num-section"><h4>✦ 仕事・適職</h4><p>${d.work}</p></div>
+    <div class="num-section"><h4>✦ 相性の良い星座</h4><p>${good.map((z) => `${z.symbol} ${z.name}`).join("、")}</p></div>
+    <div class="num-section"><h4>✦ 開運アドバイス</h4><p>${d.advice}</p></div>`;
+}
+
 document.getElementById("zodiac-form").addEventListener("submit", (e) => {
   e.preventDefault();
   const sign = zodiacOf(document.getElementById("zodiac-birth").value);
@@ -512,6 +531,7 @@ document.getElementById("zodiac-form").addEventListener("submit", (e) => {
         </div>`).join("")}
     </div>
     ${luckyHtml([`ラッキーカラー：${f.color}`, `ラッキーアイテム：${f.item}`, `ラッキースポット：${f.spot}`])}
+    ${zodiacDetailHtml(sign)}
     ${shareButtons(`【${SITE_NAME}】${label}の${sign.name}は総合運${stars(f.total)}！ラッキーカラーは${f.color}✨`)}
   `);
 });
@@ -595,6 +615,17 @@ function elementCompat(a, b) {
   return pair === "火風" || pair === "地水" ? ELEMENT_COMPAT.good : ELEMENT_COMPAT.mid;
 }
 
+// 運命数のグループ（マスターナンバーは 11→2, 22→4, 33→6 として扱う）
+function numCompatText(na, nb) {
+  const base = (n) => (n > 9 ? digitSum(n) : n);
+  const ga = NUM_GROUPS.find((g) => g.nums.includes(base(na)));
+  const gb = NUM_GROUPS.find((g) => g.nums.includes(base(nb)));
+  const head = `運命数${na}（${NUMEROLOGY[na].title}）と運命数${nb}（${NUMEROLOGY[nb].title}）の組み合わせ。`;
+  if (na === nb) return `${head}同じ運命数を持つふたりは、考え方や大切にしているものがよく似ています。言葉にしなくても分かり合える一方、同じ弱点を持つことも。互いの姿を鏡にして成長できる関係です。`;
+  if (ga === gb) return `${head}どちらも「${ga.name}」で、${ga.text}価値観が共通しています。一緒にいて自然体でいられ、ペースも合いやすい関係です。`;
+  return `${head}「${ga.name}」と「${gb.name}」という異なるタイプ。${ga.text}あなたと、${gb.text}お相手は、違いがあるからこそ互いに新しい視点をもたらせます。`;
+}
+
 document.getElementById("compat-form").addEventListener("submit", (e) => {
   e.preventDefault();
   const a = document.getElementById("compat-a").value;
@@ -602,6 +633,7 @@ document.getElementById("compat-form").addEventListener("submit", (e) => {
   const sa = zodiacOf(a), sb = zodiacOf(b);
   const na = lifePathNumber(a), nb = lifePathNumber(b);
   const el = elementCompat(sa.element, sb.element);
+  const pair = ELEMENT_PAIR[elementPairKey(sa.element, sb.element)];
 
   const rand = seededRandom([a, b].sort().join("|"));
   const numBonus = na === nb ? 8 : Math.abs((na % 9) - (nb % 9)) <= 2 ? 4 : 0;
@@ -617,38 +649,109 @@ document.getElementById("compat-form").addEventListener("submit", (e) => {
     <div class="meter-bar"><span style="width:${score}%"></span></div>
     <p>${el.text}</p>
     <p>${advice}</p>
+    <div class="cats">
+      ${[["恋愛", 0], ["友情", 3], ["仕事", -3]].map(([label, bias]) => {
+        const v = Math.max(30, Math.min(99, score + bias + Math.floor(rand() * 15) - 7));
+        return `<div class="cat"><p><strong>${label}の相性</strong> ${v}点</p><div class="meter-bar"><span style="width:${v}%"></span></div></div>`;
+      }).join("")}
+    </div>
+    <div class="num-section"><h4>✦ 星座から見たふたり：${pair.title}</h4><p>${pair.text}</p></div>
+    <div class="num-section"><h4>✦ 数秘術から見たふたり</h4><p>${numCompatText(na, nb)}</p></div>
+    <div class="num-section"><h4>✦ ふたりへのアドバイス</h4><p>${pair.advice}</p></div>
     ${shareButtons(`【${SITE_NAME}】${sa.name}×${sb.name}の相性は${score}点でした💞`)}
   `);
 });
 
 // ---- ルーン ----
+// 上下対称でないルーンは、逆位置（rev）が出ることがあります
+function drawRunes(n) {
+  const pool = [...RUNES];
+  return Array.from({ length: n }, () => {
+    const r = pool.splice(Math.floor(Math.random() * pool.length), 1)[0];
+    const d = RUNE_DETAIL[r.name];
+    return { ...r, ...d, reversed: d.rev !== null && Math.random() < 0.5 };
+  });
+}
+const runePos = (r) => (r.reversed ? "逆位置" : r.rev === null ? "正位置（逆位置なし）" : "正位置");
+
 document.getElementById("rune-draw").addEventListener("click", () => {
-  const r = RUNES[Math.floor(Math.random() * RUNES.length)];
+  const [r] = drawRunes(1);
   show(document.getElementById("rune-result"), `
-    <p class="symbol rune">${r.char}</p>
+    <p class="symbol rune ${r.reversed ? "rev" : ""}">${r.char}</p>
     <h3>${r.name}</h3>
-    <p class="sub">${r.meaning}</p>
-    <p>${r.text}</p>
+    <p class="sub">${r.meaning} ／ ${runePos(r)}</p>
+    <p>${r.reversed ? r.rev : r.text}</p>
+    <div class="cats">
+      <div class="cat"><p><strong>恋愛</strong></p><p>${r.love}</p></div>
+      <div class="cat"><p><strong>仕事</strong></p><p>${r.work}</p></div>
+    </div>
+    <div class="num-section"><h4>✦ アドバイス</h4><p>${r.advice}</p></div>
+    ${r.reversed ? `<p class="sub">※ 逆位置は、そのルーンの力が弱まっている・裏目に出やすい状態を表します。本来の意味は「${r.text}」</p>` : ""}
     ${shareButtons(`【${SITE_NAME}】ルーン占いで「${r.name}（${r.meaning}）」を引きました`)}
+  `);
+});
+
+document.getElementById("rune-draw3").addEventListener("click", () => {
+  const runes = drawRunes(3);
+  const labels = [["過去", "これまでの流れ・原因"], ["現在", "今のあなたの状態"], ["未来", "このまま進んだ先"]];
+  show(document.getElementById("rune-result"), `
+    <h3>過去・現在・未来</h3>
+    <div class="rune-spread">
+      ${runes.map((r, i) => `<div class="rune-slot">
+        <p class="rune-label">${labels[i][0]}</p>
+        <p class="symbol rune ${r.reversed ? "rev" : ""}">${r.char}</p>
+        <p><strong>${r.name}</strong></p>
+        <p class="sub">${r.meaning}<br>${r.reversed ? "逆位置" : "正位置"}</p>
+      </div>`).join("")}
+    </div>
+    ${runes.map((r, i) => `<div class="num-section"><h4>✦ ${labels[i][0]}：${labels[i][1]}</h4><p>${r.reversed ? r.rev : r.text}</p></div>`).join("")}
+    <div class="num-section"><h4>✦ 未来をよくするアドバイス</h4><p>${runes[2].advice}</p></div>
+    ${shareButtons(`【${SITE_NAME}】ルーン占い（過去・現在・未来）で「${runes.map((r) => r.name).join("・")}」を引きました`)}
   `);
 });
 
 // ---- 九星気学（kyusei.js） ----
 
 // ---- 夢占い ----
+const DREAM_LUCK = { good: ["吉夢", ""], caution: ["注意のサイン", "rev"], neutral: ["状況しだい", "neutral"] };
+
+function dreamHtml(d) {
+  const [luck, cls] = DREAM_LUCK[d.luck];
+  return `<div class="dream-item">
+    <h3>「${d.keys[0]}」の夢 <span class="badge ${cls}">${luck}</span></h3>
+    <p class="sub">${d.cat}</p>
+    <p>${d.text}</p>
+    ${d.scenes ? `<ul class="dream-scenes">${d.scenes.map(([k, v]) => `<li><strong>${k}</strong>：${v}</li>`).join("")}</ul>` : ""}
+  </div>`;
+}
+
+function searchDream(word) {
+  const el = document.getElementById("dream-result");
+  const hits = DREAMS.filter((d) => d.keys.some((k) => word.includes(k) || k.includes(word))
+    || (d.scenes || []).some(([k]) => k.includes(word)));
+  if (!hits.length) {
+    show(el, `<h3>「${escapeHtml(word)}」は見つかりませんでした</h3><p>別の言葉で試すか、キーワード一覧から選んでください。</p>`);
+    return;
+  }
+  show(el, hits.map(dreamHtml).join("") +
+    shareButtons(`【${SITE_NAME}】「${hits[0].keys[0]}」の夢の意味を占いました🌙`));
+}
 
 document.getElementById("dream-form").addEventListener("submit", (e) => {
   e.preventDefault();
-  const word = document.getElementById("dream-word").value.trim();
-  const hits = DREAMS.filter((d) => d.keys.some((k) => word.includes(k) || k.includes(word)));
-  const el = document.getElementById("dream-result");
-  if (!hits.length) {
-    const examples = DREAMS.slice(0, 10).map((d) => d.keys[0]).join("、");
-    show(el, `<h3>「${escapeHtml(word)}」は見つかりませんでした</h3><p>別の言葉で試してみてください。（例：${examples}）</p>`);
-    return;
-  }
-  show(el, hits.map((d) => `<h3>「${d.keys[0]}」の夢</h3><p>${d.text}</p>`).join("") +
-    shareButtons(`【${SITE_NAME}】「${hits[0].keys[0]}」の夢の意味を占いました🌙`));
+  searchDream(document.getElementById("dream-word").value.trim());
+});
+
+// カテゴリ別のキーワード一覧（クリックで検索）
+document.getElementById("dream-index").innerHTML = DREAM_CATEGORIES.map((c) => `
+  <div class="dream-cat"><span class="dream-cat-name">${c}</span>
+    ${DREAMS.filter((d) => d.cat === c).map((d) => `<button type="button" class="chip" data-word="${d.keys[0]}">${d.keys[0]}</button>`).join("")}
+  </div>`).join("");
+document.getElementById("dream-index").addEventListener("click", (e) => {
+  const w = e.target.dataset.word;
+  if (!w) return;
+  document.getElementById("dream-word").value = w;
+  searchDream(w);
 });
 
 // ---- 初期表示 ----
