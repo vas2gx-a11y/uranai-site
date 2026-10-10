@@ -25,3 +25,14 @@ python3 -m http.server 8000
 ## デプロイ（Render）
 1. GitHub にこのリポジトリを push
 2. Render ダッシュボード → New → Blueprint → このリポジトリを選択（`render.yaml` を自動検出）
+
+## ログイン機能（Supabase）の有効化
+1. https://supabase.com でプロジェクトを作成
+2. SQL Editor で `supabase/schema.sql` を実行
+3. Authentication → URL Configuration の Site URL と Redirect URLs に公開URL（`/mypage.html` を含む）を登録
+4. Google ログイン：Google Cloud Console で OAuth クライアント（ウェブ）を作成し、承認済みリダイレクト URI に `https://<プロジェクト>.supabase.co/auth/v1/callback` を登録。発行されたクライアントID・シークレットを Supabase の Authentication → Providers → Google に設定
+5. Project Settings → API の Project URL と anon key を `config.js` に記入して push
+
+`config.js` が空のままなら、ログインなし（ブラウザ内保存のみ）で動きます。
+- `auth.js` … ログインとプロフィール・履歴の同期
+- `mypage.html` … マイページ（ログイン・プロフィール・履歴・退会）

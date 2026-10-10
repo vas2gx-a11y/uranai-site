@@ -25,7 +25,11 @@ let quietShow = false;
 function show(el, html) {
   el.innerHTML = html;
   el.hidden = false;
-  if (!quietShow) el.scrollIntoView({ behavior: "smooth", block: "nearest" });
+  if (quietShow) return;
+  el.scrollIntoView({ behavior: "smooth", block: "nearest" });
+  // ログイン中なら auth.js が履歴に保存する
+  const title = el.querySelector("h3")?.textContent || "";
+  document.dispatchEvent(new CustomEvent("fortune-shown", { detail: { kind: el.id.replace(/-result$/, ""), title } }));
 }
 
 const escapeHtml = (s) => s.replace(/[&<>"']/g, (c) => `&#${c.charCodeAt(0)};`);

@@ -122,3 +122,28 @@ function clearProfile() {
 }
 
 renderLayout();
+
+// ---- ログイン機能（config.js に Supabase の設定があるときだけ有効） ----
+function loadScript(src) {
+  return new Promise((resolve, reject) => {
+    const s = document.createElement("script");
+    s.src = src;
+    s.onload = resolve;
+    s.onerror = reject;
+    document.head.appendChild(s);
+  });
+}
+
+const authReady = (async () => {
+  try {
+    await loadScript("/config.js");
+    if (!SUPABASE_URL || !SUPABASE_ANON_KEY) return false;
+    await loadScript("https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js");
+    document.querySelector(".global-nav")?.insertAdjacentHTML("beforeend", `<a href="/mypage.html">ログイン</a>`);
+    await loadScript("/auth.js");
+    return true;
+  } catch (err) {
+    console.error("ログイン機能を読み込めませんでした", err);
+    return false;
+  }
+})();

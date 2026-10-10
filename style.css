@@ -474,3 +474,18 @@ details.card summary { cursor: pointer; color: var(--gold); }
   .ky-period-body { grid-template-columns: 1fr; }
   .ky-board { max-width: 200px; margin: 0 auto; }
 }
+
+/* ---- マイページ ---- */
+.login-msg { color: var(--gold); min-height: 1.5em; }
+.article .history td { font-size: .88rem; }
+.history .h-date { white-space: nowrap; color: var(--muted); font-size: .78rem; width: 9em; }
+.h-kind { display: inline-block; font-size: .72rem; padding: 0 8px; border-radius: 999px; background: rgba(155, 123, 255, .25); margin-right: 4px; }
+.btn.danger { color: #ff9fb3; border-color: rgba(255, 107, 129, .5); }
+.article input[type="email"] { font: inherit; color: var(--text); background: var(--card); border: 1px solid var(--border); border-radius: 8px; padding: 8px 12px; min-width: 260px; }
+.article a { color: var(--gold); }
+.article a.btn { color: #fff; }
+.article a.btn.ghost { color: var(--muted); }
+.google-btn { display: inline-flex; align-items: center; gap: 10px; background: #fff; color: #1f1f1f; font-weight: 500; border: 1px solid #dadce0; }
+.google-btn:hover { background: #f5f5f5; }
+.email-login { margin: 8px 0 12px; font-size: .9rem; }
+.email-login summary { cursor: pointer; color: var(--muted); }

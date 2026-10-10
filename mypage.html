@@ -1,0 +1,142 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>マイページ｜星読みの部屋</title>
+  <meta name="description" content="星読みの部屋のマイページ。プロフィールと占いの履歴を保存できます。">
+  <meta name="robots" content="noindex">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Shippori+Mincho:wght@400;700&family=Noto+Sans+JP:wght@400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+  <div class="stars" aria-hidden="true"></div>
+  <header id="site-header"></header>
+  <main class="article">
+    <p class="breadcrumb"><a href="/">トップ</a> ／ マイページ</p>
+    <h1>マイページ</h1>
+    <div id="mypage"><p class="sub">読み込み中…</p></div>
+  </main>
+  <footer id="site-footer"></footer>
+  <script src="/data.js"></script>
+  <script src="/common.js"></script>
+  <script>
+    const root = document.getElementById("mypage");
+    const esc = (s) => String(s ?? "").replace(/[&<>"']/g, (c) => `&#${c.charCodeAt(0)};`);
+    const PREF_NAMES = ["北海道","青森県","岩手県","宮城県","秋田県","山形県","福島県","茨城県","栃木県","群馬県","埼玉県","千葉県","東京都","神奈川県","新潟県","富山県","石川県","福井県","山梨県","長野県","岐阜県","静岡県","愛知県","三重県","滋賀県","京都府","大阪府","兵庫県","奈良県","和歌山県","鳥取県","島根県","岡山県","広島県","山口県","徳島県","香川県","愛媛県","高知県","福岡県","佐賀県","長崎県","熊本県","大分県","宮崎県","鹿児島県","沖縄県"];
+
+    function renderLogin(message = "") {
+      root.innerHTML = `
+        <div class="card">
+          <h2 class="card-title">ログイン・新規登録</h2>
+          <p>Googleアカウントでログインできます。初めての方はそのまま登録されます。</p>
+          <p class="sub">ログインすると、プロフィールと占いの履歴が保存され、スマホやパソコンなど別の端末でも同じ結果が見られます。</p>
+          <button class="btn google-btn" id="google-login" type="button">
+            <svg viewBox="0 0 48 48" width="18" height="18" aria-hidden="true"><path fill="#FFC107" d="M43.6 20.5H42V20H24v8h11.3C33.7 32.7 29.2 36 24 36c-6.6 0-12-5.4-12-12s5.4-12 12-12c3.1 0 5.8 1.2 7.9 3.1l5.7-5.7C34 6.1 29.3 4 24 4 12.9 4 4 12.9 4 24s8.9 20 20 20 20-8.9 20-20c0-1.3-.1-2.4-.4-3.5z"/><path fill="#FF3D00" d="M6.3 14.7l6.6 4.8C14.7 15.1 19 12 24 12c3.1 0 5.8 1.2 7.9 3.1l5.7-5.7C34 6.1 29.3 4 24 4 16.3 4 9.7 8.3 6.3 14.7z"/><path fill="#4CAF50" d="M24 44c5.2 0 9.9-2 13.4-5.2l-6.2-5.2C29.2 35.1 26.7 36 24 36c-5.2 0-9.6-3.3-11.3-7.9l-6.5 5C9.5 39.6 16.2 44 24 44z"/><path fill="#1976D2" d="M43.6 20.5H42V20H24v8h11.3c-.8 2.2-2.2 4.2-4.1 5.6l6.2 5.2C37 39.2 44 34 44 24c0-1.3-.1-2.4-.4-3.5z"/></svg>
+            Googleでログイン
+          </button>
+          <p id="login-msg" class="login-msg">${message}</p>
+          <details class="email-login">
+            <summary>Googleアカウントをお持ちでない方（メールでログイン）</summary>
+            <form class="form compact" id="login-form">
+              <label>メールアドレス <input type="email" id="login-email" required autocomplete="email" placeholder="you@example.com"></label>
+              <button class="btn ghost" type="submit">ログインリンクを送る</button>
+            </form>
+          </details>
+          <p class="sub">登録すると<a href="/terms.html">利用規約</a>と<a href="/privacy.html">プライバシーポリシー</a>に同意したものとみなされます。</p>
+        </div>`;
+      document.getElementById("google-login").addEventListener("click", async () => {
+        const { error } = await sb.auth.signInWithOAuth({ provider: "google", options: { redirectTo: location.origin + "/mypage.html" } });
+        if (error) document.getElementById("login-msg").textContent = `ログインできませんでした：${error.message}`;
+      });
+      document.getElementById("login-form").addEventListener("submit", async (e) => {
+        e.preventDefault();
+        const btn = e.target.querySelector("button");
+        btn.disabled = true;
+        const email = document.getElementById("login-email").value.trim();
+        const { error } = await sb.auth.signInWithOtp({ email, options: { emailRedirectTo: location.origin + "/mypage.html" } });
+        btn.disabled = false;
+        document.getElementById("login-msg").textContent = error
+          ? `送信できませんでした：${error.message}`
+          : `${email} にログイン用のリンクを送りました。メールを開いてリンクを押してください。`;
+      });
+    }
+
+    async function renderMypage(user) {
+      const p = loadProfile();
+      const { data: history, error } = await sb.from("fortune_history")
+        .select("kind, title, created_at").order("created_at", { ascending: false }).limit(50);
+      const fmt = (iso) => new Date(iso).toLocaleString("ja-JP", { year: "numeric", month: "numeric", day: "numeric", hour: "2-digit", minute: "2-digit" });
+      root.innerHTML = `
+        <div class="card">
+          <h2 class="card-title">アカウント</h2>
+          <p>${esc(user.email)} でログイン中</p>
+          <div class="my-actions"><button class="btn ghost small" id="logout">ログアウト</button></div>
+        </div>
+
+        <h2>プロフィール</h2>
+        <div class="card">
+          ${p.birth ? `
+          <table>
+            <tr><th>名前</th><td>${esc((p.sei || "") + " " + (p.mei || "")).trim() || "未登録"}</td></tr>
+            <tr><th>生年月日</th><td>${esc(p.birth)}</td></tr>
+            <tr><th>生まれた時刻</th><td>${p.time ? esc(p.time) : "不明"}</td></tr>
+            <tr><th>出生地</th><td>${p.pref !== "" && p.pref != null ? esc(PREF_NAMES[p.pref]) : "不明"}</td></tr>
+            <tr><th>16タイプ診断</th><td>${p.type16 ? "回答済み" : "未回答"}</td></tr>
+          </table>` : `<p>プロフィールがまだ登録されていません。</p>`}
+          <div class="my-actions"><a class="btn small" href="/#profile">${p.birth ? "プロフィールを編集" : "プロフィールを登録"}</a><a class="btn ghost small" href="/#today">今日の運勢を見る</a></div>
+        </div>
+
+        <h2>占いの履歴</h2>
+        <div class="card">
+          ${error ? `<p>履歴を読み込めませんでした。</p>` : history.length ? `
+          <table class="history">
+            ${history.map((h) => `<tr><td class="h-date">${fmt(h.created_at)}</td><td><span class="h-kind">${esc(KIND_LABEL[h.kind] || h.kind)}</span> ${esc(h.title)}</td></tr>`).join("")}
+          </table>
+          <div class="my-actions"><button class="btn ghost small" id="clear-history">履歴をすべて削除</button></div>`
+          : `<p>まだ履歴はありません。占うとここに記録されます（最新50件を表示）。</p>`}
+        </div>
+
+        <h2>退会</h2>
+        <div class="card">
+          <p>アカウントと、保存されたプロフィール・履歴をすべて削除します。この操作は取り消せません。</p>
+          <div class="my-actions"><button class="btn ghost small danger" id="delete-account">退会する</button></div>
+        </div>`;
+
+      document.getElementById("logout").addEventListener("click", async () => {
+        await sb.auth.signOut();
+        location.reload();
+      });
+      document.getElementById("clear-history")?.addEventListener("click", async () => {
+        if (!confirm("占いの履歴をすべて削除しますか？")) return;
+        await sb.from("fortune_history").delete().eq("user_id", user.id);
+        renderMypage(user);
+      });
+      document.getElementById("delete-account").addEventListener("click", async () => {
+        if (!confirm("退会すると、アカウントと保存したデータがすべて削除されます。よろしいですか？")) return;
+        const { error } = await sb.rpc("delete_user");
+        if (error) { alert("退会処理に失敗しました：" + error.message); return; }
+        clearProfile();
+        await sb.auth.signOut();
+        alert("退会しました。ご利用ありがとうございました。");
+        location.href = "/";
+      });
+    }
+
+    authReady.then(async (ok) => {
+      if (!ok) {
+        root.innerHTML = `<div class="card"><p>ログイン機能は現在準備中です。プロフィールはこの端末のブラウザに保存されます（<a href="/#profile">プロフィール登録</a>）。</p></div>`;
+        return;
+      }
+      const { data: { session } } = await sb.auth.getSession();
+      const params = new URLSearchParams(location.hash.slice(1));
+      if (session) renderMypage(session.user);
+      else renderLogin(params.get("error_description") ? `ログインに失敗しました：${esc(params.get("error_description"))}` : "");
+      document.addEventListener("auth-changed", (e) => { if (!e.detail.user) renderLogin(); });
+      // ログイン直後はサーバーとのプロフィール同期が終わってから表示する
+      document.addEventListener("profile-synced", () => { if (currentUser) renderMypage(currentUser); });
+    });
+  </script>
+</body>
+</html>

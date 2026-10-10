@@ -57,6 +57,7 @@ function openProfileDialog() {
       timeUnknown: dlg.querySelector("#pf-time-unknown").checked || !timeInput.value,
       pref: dlg.querySelector("#pf-pref").value,
     });
+    document.dispatchEvent(new Event("profile-saved"));
     applyProfile();
   });
   dlg.querySelector("#pf-later").addEventListener("click", () => {
@@ -66,8 +67,9 @@ function openProfileDialog() {
   dlg.querySelector("#pf-delete")?.addEventListener("click", () => {
     if (!confirm("登録したプロフィールと診断結果を削除しますか？")) return;
     clearProfile();
+    document.dispatchEvent(new Event("profile-cleared"));
     dlg.close();
-    location.reload();
+    setTimeout(() => location.reload(), 500); // サーバー側の削除を待つ
   });
   dlg.showModal();
 }
@@ -133,7 +135,10 @@ function applyProfile() {
 document.getElementById("type-form")?.addEventListener("submit", () => {
   const form = document.getElementById("type-form");
   const answers = TYPE_QUESTIONS.map((_, i) => form.querySelector(`input[name="q${i}"]:checked`)?.value);
-  if (answers.every((v) => v !== undefined) && loadProfile().birth) saveProfile({ type16: answers.map(Number) });
+  if (answers.every((v) => v !== undefined) && loadProfile().birth) {
+    saveProfile({ type16: answers.map(Number) });
+    document.dispatchEvent(new Event("profile-saved"));
+  }
 });
 
 // ---- 起動時 ----
