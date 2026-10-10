@@ -1,0 +1,66 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>星読みの部屋｜タロット・星座占い・数秘術</title>
+  <meta name="description" content="無料で楽しめるタロット占い・今日の星座占い・数秘術。">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Shippori+Mincho:wght@400;700&family=Noto+Sans+JP:wght@400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="stars" aria-hidden="true"></div>
+
+  <header class="site-header">
+    <h1>星読みの部屋</h1>
+    <p class="tagline">タロット・星座・数秘術で、今日のあなたを読み解く</p>
+    <nav class="tabs" role="tablist">
+      <button class="tab active" data-tab="tarot" role="tab">タロット</button>
+      <button class="tab" data-tab="zodiac" role="tab">星座占い</button>
+      <button class="tab" data-tab="numerology" role="tab">数秘術</button>
+    </nav>
+  </header>
+
+  <main>
+    <!-- タロット -->
+    <section id="tarot" class="panel active">
+      <h2>ワンオラクル・タロット</h2>
+      <p class="lead">心の中で質問を思い浮かべて、カードを1枚選んでください。</p>
+      <div class="deck" id="deck"></div>
+      <div class="result" id="tarot-result" hidden></div>
+      <button class="btn ghost" id="tarot-reset" hidden>もう一度占う</button>
+    </section>
+
+    <!-- 星座占い -->
+    <section id="zodiac" class="panel">
+      <h2>今日の星座占い</h2>
+      <p class="lead">誕生日を入力すると、今日の運勢を占います。</p>
+      <form class="form" id="zodiac-form">
+        <label>誕生日 <input type="date" id="zodiac-birth" required></label>
+        <button class="btn" type="submit">占う</button>
+      </form>
+      <div class="result" id="zodiac-result" hidden></div>
+    </section>
+
+    <!-- 数秘術 -->
+    <section id="numerology" class="panel">
+      <h2>数秘術 ― 運命数</h2>
+      <p class="lead">生年月日から、あなたの本質を表す「運命数」を導きます。</p>
+      <form class="form" id="num-form">
+        <label>生年月日 <input type="date" id="num-birth" required></label>
+        <button class="btn" type="submit">占う</button>
+      </form>
+      <div class="result" id="num-result" hidden></div>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <p>占い結果はエンターテインメントです。</p>
+    <p>&copy; <span id="year"></span> 星読みの部屋</p>
+  </footer>
+
+  <script src="data.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
