@@ -19,12 +19,16 @@ document.querySelectorAll(".tab").forEach((tab) => {
 const onHash = () => activateTab(location.hash.slice(1), true);
 window.addEventListener("hashchange", onHash);
 
+// 自動で占うとき（プロフィールから一括表示）はスクロールしない
+let quietShow = false;
+
 function show(el, html) {
   el.innerHTML = html;
   el.hidden = false;
-  el.scrollIntoView({ behavior: "smooth", block: "nearest" });
+  if (!quietShow) el.scrollIntoView({ behavior: "smooth", block: "nearest" });
 }
 
+const escapeHtml = (s) => s.replace(/[&<>"']/g, (c) => `&#${c.charCodeAt(0)};`);
 const luckyHtml = (items) => `<div class="lucky">${items.map((t) => `<span>${t}</span>`).join("")}</div>`;
 
 // ---- 判定ロジック ----
@@ -140,17 +144,8 @@ function renderMyBox() {
   if (!birth) {
     box.innerHTML = `
       <h3 class="card-title">あなたの今日の運勢</h3>
-      <p class="sub">生年月日を保存すると、次回から入力なしで運勢を表示します（この端末のブラウザ内にのみ保存されます）。</p>
-      <form class="form compact" id="my-form">
-        <label>生年月日 <input type="date" id="my-birth" required></label>
-        <button class="btn" type="submit">保存して占う</button>
-      </form>`;
-    box.querySelector("#my-form").addEventListener("submit", (e) => {
-      e.preventDefault();
-      saveProfile({ birth: box.querySelector("#my-birth").value });
-      renderMyBox();
-      fillBirthInputs();
-    });
+      <p class="sub">名前と生年月日を登録すると、すべての占いが入力なしで自動表示されます（この端末のブラウザ内にのみ保存されます）。</p>
+      <div class="my-actions"><button class="btn" type="button" data-open-profile>プロフィールを登録する</button></div>`;
     return;
   }
   const sign = zodiacOf(birth);
@@ -158,8 +153,10 @@ function renderMyBox() {
   const num = lifePathNumber(birth);
   const ky = KYUSEI[kyuseiNumber(birth)];
   const stem = getDayStem(birth);
+  const { sei = "", mei = "" } = loadProfile();
+  const who = (sei + mei).trim();
   box.innerHTML = `
-    <h3 class="card-title">あなたの今日の運勢</h3>
+    <h3 class="card-title">${who ? `${escapeHtml(who)}さんの` : "あなたの"}今日の運勢</h3>
     <div class="my-summary">
       <div class="my-sign"><p class="symbol">${sign.symbol}</p><p>${sign.name}</p></div>
       <div>
@@ -172,12 +169,8 @@ function renderMyBox() {
     <div class="my-actions">
       <a class="btn small" href="#zodiac">星座占い</a>
       <a class="btn small" href="#shichu">四柱推命</a>
-      <button class="btn ghost small" id="my-clear">保存した生年月日を削除</button>
+      <button class="btn ghost small" type="button" data-open-profile>プロフィールを編集</button>
     </div>`;
-  box.querySelector("#my-clear").addEventListener("click", () => {
-    clearProfile();
-    renderMyBox();
-  });
 }
 
 // 保存済みの生年月日を各フォームに入れておく
@@ -636,28 +629,9 @@ document.getElementById("rune-draw").addEventListener("click", () => {
   `);
 });
 
-// ---- 九星気学 ----
-document.getElementById("kyusei-form").addEventListener("submit", (e) => {
-  e.preventDefault();
-  const ky = KYUSEI[kyuseiNumber(document.getElementById("kyusei-birth").value)];
-  const rand = seededRandom("kyusei" + todayStr() + ky.name);
-  const pick = (arr) => arr[Math.floor(rand() * arr.length)];
-  const s = 1 + Math.floor(rand() * 5);
-  const dirs = ["北", "北東", "東", "南東", "南", "南西", "西", "北西"];
-
-  show(document.getElementById("kyusei-result"), `
-    <p class="symbol">☯</p>
-    <h3>${ky.name}</h3>
-    <p>${ky.text}</p>
-    <p class="total">今日の運気 <span class="stars-val">${stars(s)}</span></p>
-    <p>${pick(ZODIAC_MESSAGES)}</p>
-    ${luckyHtml([`吉方位：${pick(dirs)}`, `ラッキーカラー：${pick(LUCKY_COLORS)}`])}
-    ${shareButtons(`【${SITE_NAME}】私の本命星は「${ky.name}」。今日の運気は${stars(s)}`)}
-  `);
-});
+// ---- 九星気学（kyusei.js） ----
 
 // ---- 夢占い ----
-const escapeHtml = (s) => s.replace(/[&<>"']/g, (c) => `&#${c.charCodeAt(0)};`);
 
 document.getElementById("dream-form").addEventListener("submit", (e) => {
   e.preventDefault();

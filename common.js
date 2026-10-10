@@ -8,6 +8,7 @@ const NAV = [
   ["/#menu", "占術一覧"],
   ["/column/", "コラム"],
   ["/contact.html", "お問い合わせ"],
+  ["/#profile", "プロフィール"],
 ];
 
 const FOOTER_LINKS = [
