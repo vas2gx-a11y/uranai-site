@@ -675,9 +675,9 @@ document.getElementById("match-form").addEventListener("submit", (e) => {
   e.preventDefault();
   const me = document.getElementById("match-birth").value;
   const year = Number(document.getElementById("match-year").value) || 0;
-  // 生まれ年が空欄なら、自分の生まれ年の前後5年を対象にする
+  // 生まれ年が空欄なら、自分の生まれ年の前後10年を対象にする
   const myYear = Number(me.slice(0, 4));
-  const [from, to] = year ? [year, year] : [myYear - 5, myYear + 5];
+  const [from, to] = year ? [year, year] : [myYear - 10, myYear + 10];
   const range = from === to ? `${from}年生まれ` : `${from}〜${to}年生まれ`;
   const days = [];
   for (let d = new Date(from, 0, 1); d.getFullYear() <= to; d.setDate(d.getDate() + 1)) {
