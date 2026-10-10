@@ -98,8 +98,10 @@ function goodMatches(code) {
     }).join("");
 
     show(document.getElementById("type-result"), `
+      <div class="type-hero">${typeIllustration(code)}</div>
+      <p class="type-group">${TYPE_GROUPS[typeGroup(code)].name}グループ</p>
       <p class="symbol type-code">${code}</p>
-      <h3>${t.name}タイプ</h3>
+      <h3 class="type-name">${t.name}タイプ</h3>
       <div class="type-axes">${bars}</div>
       <p>${t.desc}</p>
       <div class="grid-2 num-features">

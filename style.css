@@ -426,6 +426,11 @@ details.card summary { cursor: pointer; color: var(--gold); }
 .tq-scale input:focus-visible + .tq-dot { outline: 2px solid var(--gold); outline-offset: 2px; }
 .tq-end { font-size: .75rem; color: var(--muted); white-space: nowrap; }
 .type-submit { text-align: center; margin-top: 16px; }
+.type-hero { text-align: center; }
+.type-art { width: min(220px, 60vw); height: auto; filter: drop-shadow(0 6px 18px rgba(0,0,0,.35)); animation: type-pop .6s ease; }
+@keyframes type-pop { from { transform: scale(.85); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+.type-group { text-align: center; color: var(--muted); font-size: .85rem; margin: 8px 0 0; letter-spacing: .1em; }
+.type-name { text-align: center; }
 .type-code { font-family: "Shippori Mincho", serif; letter-spacing: .15em; color: var(--gold); }
 .type-axes { display: grid; gap: 8px; margin: 12px 0 16px; }
 .type-axis { display: grid; grid-template-columns: 1fr 2fr 1fr; gap: 8px; align-items: center; font-size: .78rem; color: var(--muted); }

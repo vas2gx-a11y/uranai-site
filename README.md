@@ -12,6 +12,7 @@
 - `profile.js` … プロフィール登録（ブラウザ内保存）と各占いの自動表示
 - `astro.js` … ホロスコープ（天体位置の計算・出生図）
 - `mbti.js` … 16タイプ性格診断
+- `mbti-art.js` … 16タイプ診断結果のキャラクターイラスト（オリジナルSVG）
 - `kanji-strokes.js` … 姓名判断用の画数表（Unicode Unihan の日本語字形の画数から抽出）
 - `column/` … コラム記事、`terms.html` などフッターのページ
 - コラムの `numerology.html`・`tarot.html` は `data.js` の内容から生成した静的HTML
