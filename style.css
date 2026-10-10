@@ -535,3 +535,22 @@ details.card summary { cursor: pointer; color: var(--gold); }
   .match-sign .meter-bar { grid-row: 3; grid-column: 1 / -1; }
   .match-sign strong { grid-row: 1; grid-column: 2; }
 }
+
+/* ホロスコープの要約 */
+.horo-big3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin: 12px 0 16px; text-align: center; }
+.horo-big3 > div { display: flex; flex-direction: column; align-items: center; gap: 2px; border: 1px solid var(--border); border-radius: 12px; padding: 10px 4px; background: rgba(255, 255, 255, .03); }
+.horo-role { font-size: .72rem; color: var(--muted); }
+.horo-sign { font-size: 1.9rem; line-height: 1.2; color: var(--gold); }
+.horo-big3 strong { font-size: .95rem; }
+.horo-themes { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin: 8px 0 16px; }
+.horo-themes .sub { margin: 2px 0 4px; font-size: .78rem; }
+.horo-el { display: grid; grid-template-columns: 14em 1fr 1.5em; gap: 8px; align-items: center; font-size: .85rem; }
+.horo-el .meter-bar { margin: 0; height: 8px; }
+.horo-el strong { text-align: right; }
+.horo-more { margin: 20px 0 8px; }
+.horo-more summary { cursor: pointer; color: var(--muted); font-size: .9rem; }
+@media (max-width: 480px) {
+  .horo-themes { grid-template-columns: 1fr; }
+  .horo-el { grid-template-columns: 1fr 1.5em; }
+  .horo-el .meter-bar { grid-column: 1 / -1; grid-row: 2; }
+}

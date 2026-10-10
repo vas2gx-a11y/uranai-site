@@ -242,43 +242,68 @@ function chartSvg(lon, asc, aspects) {
     const EL_TEXT = { 火: "情熱と行動力", 地: "現実感覚と安定", 風: "知性とコミュニケーション", 水: "感受性と共感力" };
 
     const sun = signOf(lon.sun), moon = signOf(lon.moon);
+    const ascSign = asc !== null ? signOf(asc) : null;
+    const read = (key) => HORO_READ[signOf(lon[key]).name][key];
+    const themes = [
+      ["moon", "素の自分・心が満たされること"],
+      ["venus", "恋愛・好きなもの"],
+      ["mars", "仕事・行動のスタイル"],
+      ["mercury", "考え方・話し方"],
+      ["jupiter", "幸運のカギ"],
+      ["saturn", "人生の課題"],
+    ];
+    const planetOf = (k) => PLANETS.find((p) => p.key === k);
+    const elTotal = Object.values(elCount).reduce((t, v) => t + v, 0);
+
     show(document.getElementById("horo-result"), `
-      <h3>あなたの出生図</h3>
+      <h3>あなたのホロスコープ</h3>
       <p class="sub">${y}年${m}月${d}日 ${time || "12:00（時刻不明）"} ${pref ? pref[0] : ""}生まれ</p>
-      <div class="chart-wrap">${chartSvg(lon, asc, aspects)}</div>
+
+      <div class="horo-big3">
+        <div><span class="horo-role">本質（太陽）</span><span class="horo-sign">${sun.glyph}</span><strong>${sun.name}</strong></div>
+        <div><span class="horo-role">素の自分（月）</span><span class="horo-sign">${moon.glyph}</span><strong>${moon.name}</strong></div>
+        <div><span class="horo-role">第一印象（ASC）</span><span class="horo-sign">${ascSign ? ascSign.glyph : "？"}</span><strong>${ascSign ? ascSign.name : "時刻が必要"}</strong></div>
+      </div>
 
       <div class="num-section highlight">
-        <h4>✦ ビッグスリー</h4>
-        <p><strong>☉ 太陽：${sun.name}</strong> ― ${sun.trait}。これがあなたの人生の軸です。</p>
-        <p><strong>☽ 月：${moon.name}</strong> ― 素のあなたは${moon.trait.replace("。", "で、").replace(/気質$/, "一面を持っています")}。${time ? "" : "（時刻不明のため、月の星座は前後する場合があります）"}</p>
-        ${asc !== null ? `<p><strong>ASC：${signOf(asc).name}</strong> ― 第一印象や外から見たあなたは「${signOf(asc).trait.split("。")[0]}」。</p>` : `<p class="sub">生まれた時刻と都道府県を入れると、アセンダント（第一印象）とハウスも分かります。</p>`}
+        <h4>✦ ひとことで言うと</h4>
+        <p>あなたの本質は<strong>${sun.name}</strong>（${ZODIAC_DETAIL[sun.name].keyword}）。${sun.trait}を持つ人です。</p>
+        <p>ただし心の中の素顔は<strong>${moon.name}</strong>。${HORO_READ[moon.name].moon}${time ? "" : "<br><span class=\"sub\">（時刻不明のため、月の星座は前後の星座になる場合があります）</span>"}</p>
+        ${ascSign ? `<p>そして周りからは<strong>${ascSign.name}</strong>らしく、${HORO_READ[ascSign.name].asc.replace(/。$/, "")}を持たれやすいでしょう。</p>` : `<p class="sub">生まれた時刻と都道府県を入れると、第一印象（アセンダント）も分かります。</p>`}
+      </div>
+      <p class="sub">※ 普段の星座占いの「星座」は、太陽の星座のことです。ホロスコープでは生まれた瞬間の月や金星などの位置も見て、あなたをより細かく読み解きます。</p>
+
+      <h4 class="detail-title">✦ テーマ別の読み解き</h4>
+      <div class="horo-themes">
+        ${themes.map(([k, label]) => {
+          const p = planetOf(k), sg = signOf(lon[k]);
+          return `<div class="cat"><p><strong>${label}</strong></p><p class="sub">${p.glyph} ${p.name}が${sg.name}${retro(k) ? "（逆行中）" : ""}</p><p>${read(k)}</p></div>`;
+        }).join("")}
       </div>
 
-      <table class="planet-table">
-        <tr><th>天体</th><th>星座</th><th>度数</th><th>ハウス</th></tr>
-        ${PLANETS.map((p) => `<tr><td>${p.glyph} ${p.name}${retro(p.key) ? " <span class=\"retro\">℞</span>" : ""}</td><td>${signOf(lon[p.key]).glyph} ${signOf(lon[p.key]).name}</td><td>${degText(lon[p.key])}</td><td>${house(lon[p.key])}</td></tr>`).join("")}
-        ${ang ? `<tr><td>ASC</td><td>${signOf(ang.asc).glyph} ${signOf(ang.asc).name}</td><td>${degText(ang.asc)}</td><td>1室</td></tr><tr><td>MC</td><td>${signOf(ang.mc).glyph} ${signOf(ang.mc).name}</td><td>${degText(ang.mc)}</td><td>－</td></tr>` : ""}
-      </table>
-      <p class="sub">℞＝逆行。ハウスはホールサイン方式です。</p>
-
-      <div class="num-section">
-        <h4>✦ 天体ごとの読み解き</h4>
-        ${PLANETS.slice(2, 7).map((p) => `<p><strong>${p.glyph} ${p.name}（${p.theme}）</strong>：${signOf(lon[p.key]).name}。${signOf(lon[p.key]).trait}。</p>`).join("")}
+      <h4 class="detail-title">✦ あなたの強み（四元素のバランス）</h4>
+      <div class="match-signs">
+        ${Object.entries(elCount).map(([k, v]) => `<div class="horo-el"><span>${k}（${EL_TEXT[k]}）</span><span class="meter-bar"><span style="width:${Math.round((v / elTotal) * 100)}%"></span></span><strong>${v}</strong></div>`).join("")}
       </div>
+      <p>太陽〜土星の7つの天体のうち、最も多いのは「${topEl}」。あなたの一番の強みは<strong>${EL_TEXT[topEl]}</strong>です。</p>
 
-      <div class="num-section">
-        <h4>✦ 四元素のバランス</h4>
-        <p>${Object.entries(elCount).map(([k, v]) => `${k} ${v}`).join("　")}</p>
-        <p>最も多いのは「${topEl}」。あなたの強みは<strong>${EL_TEXT[topEl]}</strong>です。</p>
-      </div>
-
-      <div class="num-section">
-        <h4>✦ 主なアスペクト</h4>
-        ${aspects.slice(0, 6).map(({ a, b, asp }) => {
-          const pa = PLANETS.find((p) => p.key === a), pb = PLANETS.find((p) => p.key === b);
-          return `<p><span style="color:${asp.color}">●</span> ${pa.name} × ${pb.name}：${asp.name}。${asp.text}</p>`;
-        }).join("") || "<p>目立ったアスペクトはありません。</p>"}
-      </div>
+      <details class="horo-more">
+        <summary>詳しいデータを見る（出生図・天体の位置・アスペクト）</summary>
+        <div class="chart-wrap">${chartSvg(lon, asc, aspects)}</div>
+        <table class="planet-table">
+          <tr><th>天体</th><th>星座</th><th>度数</th><th>ハウス</th></tr>
+          ${PLANETS.map((p) => `<tr><td>${p.glyph} ${p.name}${retro(p.key) ? " <span class=\"retro\">℞</span>" : ""}</td><td>${signOf(lon[p.key]).glyph} ${signOf(lon[p.key]).name}</td><td>${degText(lon[p.key])}</td><td>${house(lon[p.key])}</td></tr>`).join("")}
+          ${ang ? `<tr><td>ASC</td><td>${signOf(ang.asc).glyph} ${signOf(ang.asc).name}</td><td>${degText(ang.asc)}</td><td>1室</td></tr><tr><td>MC</td><td>${signOf(ang.mc).glyph} ${signOf(ang.mc).name}</td><td>${degText(ang.mc)}</td><td>－</td></tr>` : ""}
+        </table>
+        <p class="sub">℞＝逆行（地球から見て天体が逆向きに動いて見える時期）。天王星・海王星・冥王星は動きが遅く、同じ世代の人はほぼ同じ星座になります。ハウスはホールサイン方式です。</p>
+        <div class="num-section">
+          <h4>✦ 主なアスペクト（天体どうしの角度）</h4>
+          ${aspects.slice(0, 6).map(({ a, b, asp }) => {
+            const pa = planetOf(a), pb = planetOf(b);
+            return `<p><span style="color:${asp.color}">●</span> ${pa.name}（${pa.theme}）× ${pb.name}（${pb.theme}）：${asp.name}。${asp.text}</p>`;
+          }).join("") || "<p>目立ったアスペクトはありません。</p>"}
+        </div>
+      </details>
       ${shareButtons(`【${SITE_NAME}】私のホロスコープは太陽${sun.name}・月${moon.name}${asc !== null ? `・ASC${signOf(asc).name}` : ""}でした🪐`)}
     `);
   });
