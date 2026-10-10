@@ -1,0 +1,40 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>新月・満月カレンダーと月の満ち欠けの過ごし方｜星読みの部屋</title>
+  <meta name="description" content="これから半年の新月・満月の日程と、月の満ち欠けに合わせた過ごし方を紹介します。">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Shippori+Mincho:wght@400;700&family=Noto+Sans+JP:wght@400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+  <div class="stars" aria-hidden="true"></div>
+  <header id="site-header"></header>
+  <main class="article">
+    <p class="breadcrumb"><a href="/">トップ</a> ／ <a href="/column/">コラム</a> ／ 新月・満月カレンダー</p>
+    <h1>新月・満月カレンダーと月の満ち欠けの過ごし方</h1>
+    <p>月は約29.5日の周期で満ち欠けを繰り返しています。占星術では、新月は「始まり」、満月は「達成・手放し」のタイミングとされ、月のリズムに合わせて過ごすことで運気の流れに乗りやすくなると考えられています。</p>
+    <h2>これからの新月・満月</h2>
+    <div class="card">
+      <table id="moon-table"><tr><td>読み込み中…</td></tr></table>
+      <p class="sub" style="margin-top:8px">※ 日付は計算による目安です（前後1日程度ずれる場合があります）。</p>
+    </div>
+    <h2>月の満ち欠けと過ごし方</h2>
+    <div id="phase-list"></div>
+    <h2>新月の願いごと</h2>
+    <p>新月から48時間以内に願いごとを紙に書き出すと叶いやすい、という言い伝えがあります。「〜したい」ではなく「〜しています」と完了形で書くのがポイントです。</p>
+  </main>
+  <footer id="site-footer"></footer>
+  <script src="/data.js"></script>
+  <script src="/common.js"></script>
+  <script>
+    document.getElementById("moon-table").innerHTML =
+      "<tr><th>日付</th><th>月相</th></tr>" +
+      upcomingMoons(12).map((m) => "<tr><td>" + m.date.getFullYear() + "年" + jpDate(m.date) + "頃</td><td>" + m.emoji + " " + m.type + "</td></tr>").join("");
+    document.getElementById("phase-list").innerHTML = MOON_PHASES.slice(0, 8)
+      .map((p) => '<div class="card"><h3>' + p.emoji + " " + p.name + "</h3><p>" + p.text + "</p></div>").join("");
+  </script>
+</body>
+</html>

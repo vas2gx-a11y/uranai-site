@@ -38,18 +38,14 @@ body {
 
 h1, h2, h3 { font-family: "Shippori Mincho", serif; font-weight: 700; }
 
-.site-header { text-align: center; padding: 48px 16px 8px; position: relative; }
-.site-header h1 { margin: 0; font-size: clamp(2rem, 6vw, 3rem); color: var(--gold); letter-spacing: .1em; }
-.tagline { margin: 4px 0 24px; color: var(--muted); }
-
-.tabs { display: inline-flex; gap: 4px; padding: 4px; border: 1px solid var(--border); border-radius: 999px; background: var(--card); }
+.tabs { display: flex; max-width: 100%; overflow-x: auto; scrollbar-width: none; margin: 0 auto 8px; width: fit-content; gap: 4px; padding: 4px; border: 1px solid var(--border); border-radius: 999px; background: var(--card); }
 .tab {
   border: 0; background: none; color: var(--muted); font: inherit;
-  padding: 8px 20px; border-radius: 999px; cursor: pointer;
+  padding: 8px 18px; border-radius: 999px; cursor: pointer; white-space: nowrap;
 }
 .tab.active { background: var(--accent); color: #fff; }
 
-main { max-width: 760px; margin: 0 auto; padding: 24px 16px 48px; position: relative; }
+main { max-width: 880px; margin: 0 auto; padding: 24px 16px 48px; position: relative; }
 .panel { display: none; text-align: center; }
 .panel.active { display: block; animation: fade .4s ease; }
 @keyframes fade { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
@@ -100,10 +96,109 @@ input[type="date"] {
 .badge { display: inline-block; font-size: .8rem; padding: 2px 10px; border-radius: 999px; background: var(--accent); color: #fff; }
 .badge.rev { background: #b0476b; }
 
-.site-footer { text-align: center; color: var(--muted); font-size: .8rem; padding: 24px 16px 40px; }
-.site-footer p { margin: 0; }
-
 @media (max-width: 480px) {
   .tab { padding: 8px 14px; }
   .tarot-card { width: 52px; height: 86px; }
+}
+
+/* ---- ヘッダー ---- */
+.site-header { position: sticky; top: 0; z-index: 10; background: rgba(13, 11, 31, 0.85); backdrop-filter: blur(8px); border-bottom: 1px solid var(--border); }
+.header-inner { max-width: 1000px; margin: 0 auto; padding: 10px 16px; display: flex; align-items: center; justify-content: space-between; gap: 16px; }
+.logo { font-family: "Shippori Mincho", serif; font-weight: 700; font-size: 1.25rem; color: var(--gold); text-decoration: none; letter-spacing: .08em; }
+.global-nav { display: flex; gap: 20px; }
+.global-nav a { color: var(--text); text-decoration: none; font-size: .9rem; }
+.global-nav a:hover { color: var(--gold); }
+.menu-toggle { display: none; background: none; border: 1px solid var(--border); color: var(--text); font-size: 1.1rem; border-radius: 8px; padding: 2px 10px; cursor: pointer; }
+
+.hero { text-align: center; padding: 40px 16px 0; position: relative; }
+.hero h1 { margin: 0; font-size: clamp(2rem, 6vw, 3rem); color: var(--gold); letter-spacing: .1em; }
+.tagline { margin: 4px 0 0; color: var(--muted); }
+
+/* ---- セクション・カード ---- */
+.section { margin: 40px 0; scroll-margin-top: 70px; }
+.section-title { text-align: center; font-size: 1.5rem; margin: 0 0 16px; }
+.section-title::after { content: ""; display: block; width: 40px; height: 2px; background: var(--gold); margin: 8px auto 0; }
+.card { background: var(--card); border: 1px solid var(--border); border-radius: 16px; padding: 20px; text-align: left; }
+.card-title { margin: 0 0 4px; color: var(--gold); font-size: 1.15rem; }
+.card .sub, .sub { color: var(--muted); font-size: .85rem; margin: 0 0 8px; }
+.grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-top: 16px; }
+
+.my-summary { display: flex; gap: 20px; align-items: flex-start; margin-top: 8px; }
+.my-sign { text-align: center; min-width: 72px; }
+.my-sign p { margin: 0; }
+.stars-val.big { font-size: 1.4rem; margin: 0; }
+.my-actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; }
+.form.compact { justify-content: flex-start; margin: 8px 0 0; }
+
+.ranking { list-style: none; padding: 0; margin: 0; }
+.ranking li { display: grid; grid-template-columns: 2em 1fr auto; align-items: center; padding: 5px 0; border-bottom: 1px dashed var(--border); font-size: .92rem; }
+.ranking li:last-child { border-bottom: 0; }
+.rank-no { color: var(--muted); font-weight: 500; }
+.ranking li.top .rank-no { color: var(--gold); font-weight: 700; }
+
+.moon-card { text-align: center; }
+.moon-card .card-title { text-align: left; }
+.moon-emoji { font-size: 4rem; margin: 8px 0 0; line-height: 1.2; }
+.moon-name { font-family: "Shippori Mincho", serif; font-size: 1.3rem; margin: 0; }
+.moon-name small { font-size: .8rem; color: var(--muted); margin-left: 4px; }
+.more { display: inline-block; margin-top: 8px; color: var(--gold); font-size: .9rem; }
+
+.menu-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 12px; }
+.menu-item { display: flex; flex-direction: column; align-items: center; gap: 2px; padding: 18px 8px; text-decoration: none; color: var(--text); background: var(--card); border: 1px solid var(--border); border-radius: 14px; transition: transform .2s, border-color .2s; font-weight: 500; }
+.menu-item:hover { transform: translateY(-3px); border-color: var(--gold); }
+.menu-item span { font-size: 1.8rem; line-height: 1.4; }
+.menu-item small { color: var(--muted); font-size: .75rem; font-weight: 400; }
+
+/* ---- 結果まわり ---- */
+select, input[type="text"] {
+  font: inherit; color: var(--text); background: var(--card);
+  border: 1px solid var(--border); border-radius: 8px; padding: 8px 12px; color-scheme: dark;
+}
+select option { background: var(--bg2); }
+.btn.small { padding: 6px 18px; font-size: .85rem; text-decoration: none; display: inline-block; margin: 0; }
+.total { font-weight: 500; margin: 8px 0; }
+.cats { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin: 16px 0; }
+.cat { border: 1px solid var(--border); border-radius: 10px; padding: 10px 12px; font-size: .9rem; }
+.cat p { margin: 0; }
+.meter-bar { height: 10px; border-radius: 999px; background: var(--border); overflow: hidden; margin: 12px 0; }
+.meter-bar span { display: block; height: 100%; background: linear-gradient(90deg, var(--accent), var(--gold)); }
+.symbol.rune { font-family: serif; color: var(--gold); }
+
+.share { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 16px; padding-top: 16px; border-top: 1px solid var(--border); }
+.share-btn { flex: 1; min-width: 120px; text-align: center; padding: 8px 12px; border-radius: 999px; color: #fff; text-decoration: none; font-size: .85rem; font-weight: 500; }
+.share-btn.x { background: #000; border: 1px solid #fff4; }
+.share-btn.line { background: #06c755; }
+
+.column-list { list-style: none; padding: 0; margin: 0; display: grid; gap: 8px; }
+.column-list a { display: block; padding: 14px 16px; background: var(--card); border: 1px solid var(--border); border-radius: 12px; color: var(--text); text-decoration: none; }
+.column-list a:hover { border-color: var(--gold); }
+.column-list a::before { content: "✦ "; color: var(--gold); }
+
+/* ---- 記事ページ ---- */
+.article { text-align: left; }
+.article h1 { font-size: clamp(1.5rem, 4vw, 2rem); color: var(--gold); margin: 24px 0 8px; }
+.article h2 { font-size: 1.3rem; margin: 32px 0 8px; padding-left: 10px; border-left: 3px solid var(--gold); }
+.article h3 { font-size: 1.1rem; margin: 20px 0 4px; }
+.article .card { margin: 12px 0; }
+.article table { width: 100%; border-collapse: collapse; font-size: .9rem; }
+.article th, .article td { border-bottom: 1px solid var(--border); padding: 8px; text-align: left; vertical-align: top; }
+.article th { color: var(--gold); font-weight: 500; white-space: nowrap; }
+.breadcrumb { font-size: .8rem; color: var(--muted); margin-top: 16px; }
+.breadcrumb a { color: var(--muted); }
+.todo { color: #ffb3c7; }
+
+/* ---- フッター ---- */
+.site-footer { text-align: center; color: var(--muted); font-size: .8rem; padding: 32px 16px 40px; border-top: 1px solid var(--border); margin-top: 40px; position: relative; }
+.site-footer p { margin: 0; }
+.footer-nav { display: flex; flex-wrap: wrap; justify-content: center; gap: 8px 20px; margin-bottom: 12px; }
+.footer-nav a { color: var(--text); text-decoration: none; }
+.footer-nav a:hover { color: var(--gold); }
+
+@media (max-width: 720px) {
+  .menu-toggle { display: block; }
+  .global-nav { display: none; position: absolute; top: 100%; left: 0; right: 0; flex-direction: column; gap: 0; background: var(--bg); border-bottom: 1px solid var(--border); }
+  .site-header.nav-open .global-nav { display: flex; }
+  .global-nav a { padding: 12px 16px; border-top: 1px solid var(--border); }
+  .grid-2, .cats { grid-template-columns: 1fr; }
+  .tabs { justify-content: flex-start; width: auto; }
 }
