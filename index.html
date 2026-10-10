@@ -3,10 +3,10 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>星読みの部屋｜無料のタロット・星座占い・数秘術・相性占い</title>
-  <meta name="description" content="タロット、今日・今週・今月の星座占い、数秘術、相性占い、ルーン、九星気学、夢占いが無料で楽しめる総合占いサイト。">
+  <title>星読みの部屋｜無料のタロット・星座占い・数秘術・四柱推命・姓名判断</title>
+  <meta name="description" content="タロット（1枚・3枚引き）、星座占い、数秘術、四柱推命、算命学、紫微斗数、宿曜、易、姓名判断、おみくじ、相性占い、ルーン、九星気学、夢占いが無料で楽しめる総合占いサイト。">
   <meta property="og:title" content="星読みの部屋｜無料の総合占いサイト">
-  <meta property="og:description" content="タロット・星座占い・数秘術・相性占い・ルーン・九星気学・夢占い">
+  <meta property="og:description" content="タロット・星座占い・数秘術・四柱推命・おみくじ・相性占い・ルーン・九星気学・夢占い">
   <meta property="og:type" content="website">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Shippori+Mincho:wght@400;700&family=Noto+Sans+JP:wght@400;500&display=swap" rel="stylesheet">
@@ -36,19 +36,41 @@
         </div>
         <div class="card moon-card" id="moon-card"></div>
       </div>
+
+      <div class="card today-omikuji-banner">
+        <div class="omikuji-banner-inner">
+          <span class="omikuji-banner-icon">⛩️</span>
+          <div class="omikuji-banner-text">
+            <h3 class="card-title">今日のおみくじ</h3>
+            <p class="sub">一日の始まりにお告げを受け取り、運気を整えましょう。</p>
+          </div>
+          <a class="btn small" href="#omikuji">おみくじを引く</a>
+        </div>
+      </div>
     </section>
 
     <!-- 占術一覧 -->
     <section id="menu" class="section">
       <h2 class="section-title">占術一覧</h2>
+      <h3 class="menu-group">西洋の占い</h3>
       <div class="menu-grid">
-        <a class="menu-item" href="#tarot"><span>🃏</span>タロット<small>カードが示す答え</small></a>
+        <a class="menu-item" href="#tarot"><span>🃏</span>タロット<small>1枚引き・3枚引き</small></a>
         <a class="menu-item" href="#zodiac"><span>♈</span>星座占い<small>今日・今週・今月</small></a>
         <a class="menu-item" href="#numerology"><span>🔢</span>数秘術<small>あなたの運命数</small></a>
         <a class="menu-item" href="#compat"><span>💞</span>相性占い<small>ふたりの相性</small></a>
         <a class="menu-item" href="#rune"><span>ᚱ</span>ルーン占い<small>古代文字のお告げ</small></a>
-        <a class="menu-item" href="#kyusei"><span>☯</span>九星気学<small>本命星と今日の運気</small></a>
         <a class="menu-item" href="#dream"><span>🌙</span>夢占い<small>夢が伝えるメッセージ</small></a>
+      </div>
+      <h3 class="menu-group">東洋の占い</h3>
+      <div class="menu-grid">
+        <a class="menu-item" href="#shichu"><span>📜</span>四柱推命<small>日干で知る本質と宿命</small></a>
+        <a class="menu-item" href="#sanmei"><span>🔯</span>算命学<small>天中殺で知る宿命</small></a>
+        <a class="menu-item" href="#shibi"><span>✴</span>紫微斗数<small>命宮の主星</small></a>
+        <a class="menu-item" href="#sukuyo"><span>🌌</span>宿曜占星術<small>27宿の本命宿</small></a>
+        <a class="menu-item" href="#kyusei"><span>🧭</span>九星気学<small>本命星と今日の運気</small></a>
+        <a class="menu-item" href="#eki"><span>☯</span>易占い<small>六十四卦のお告げ</small></a>
+        <a class="menu-item" href="#omikuji"><span>⛩️</span>おみくじ<small>今日のお告げと運勢</small></a>
+        <a class="menu-item" href="#seimei"><span>✍</span>姓名判断<small>名前の画数で読む運勢</small></a>
       </div>
     </section>
 
@@ -60,17 +82,74 @@
         <button class="tab" data-tab="numerology" role="tab">数秘術</button>
         <button class="tab" data-tab="compat" role="tab">相性占い</button>
         <button class="tab" data-tab="rune" role="tab">ルーン</button>
-        <button class="tab" data-tab="kyusei" role="tab">九星気学</button>
         <button class="tab" data-tab="dream" role="tab">夢占い</button>
+        <button class="tab" data-tab="shichu" role="tab">四柱推命</button>
+        <button class="tab" data-tab="sanmei" role="tab">算命学</button>
+        <button class="tab" data-tab="shibi" role="tab">紫微斗数</button>
+        <button class="tab" data-tab="sukuyo" role="tab">宿曜</button>
+        <button class="tab" data-tab="kyusei" role="tab">九星気学</button>
+        <button class="tab" data-tab="eki" role="tab">易</button>
+        <button class="tab" data-tab="omikuji" role="tab">おみくじ</button>
+        <button class="tab" data-tab="seimei" role="tab">姓名判断</button>
       </nav>
 
       <!-- タロット -->
       <div id="tarot" class="panel active">
-        <h2>ワンオラクル・タロット</h2>
-        <p class="lead">心の中で質問を思い浮かべて、カードを1枚選んでください。</p>
+        <h2>タロット占い</h2>
+        <div class="tarot-mode-select">
+          <button type="button" class="tarot-mode-btn active" data-mode="single">1枚引き（ワンオラクル）</button>
+          <button type="button" class="tarot-mode-btn" data-mode="spread">3枚引き（スリーカード）</button>
+        </div>
+        <p class="lead" id="tarot-lead">心の中で質問を思い浮かべて、カードを1枚選んでください。</p>
+        <div id="tarot-spread-slots" class="spread-slots" hidden>
+          <div class="spread-slot" data-slot="0">
+            <span class="slot-tag">過去</span>
+            <div class="slot-box" id="slot-0"><span class="slot-icon">✦</span></div>
+            <p class="slot-name" id="slot-name-0">未選択</p>
+          </div>
+          <div class="spread-slot" data-slot="1">
+            <span class="slot-tag">現在</span>
+            <div class="slot-box" id="slot-1"><span class="slot-icon">✦</span></div>
+            <p class="slot-name" id="slot-name-1">未選択</p>
+          </div>
+          <div class="spread-slot" data-slot="2">
+            <span class="slot-tag">未来</span>
+            <div class="slot-box" id="slot-2"><span class="slot-icon">✦</span></div>
+            <p class="slot-name" id="slot-name-2">未選択</p>
+          </div>
+        </div>
         <div class="deck" id="deck"></div>
         <div class="result" id="tarot-result" hidden></div>
         <button class="btn ghost" id="tarot-reset" hidden>もう一度占う</button>
+      </div>
+
+      <!-- おみくじ -->
+      <div id="omikuji" class="panel">
+        <h2>星読み神社のおみくじ</h2>
+        <p class="lead">心を静めて、今日一日の運気とお告げを受け取りましょう。</p>
+        <div class="omikuji-stage">
+          <div class="omikuji-cylinder-wrap" id="omikuji-cylinder-wrap">
+            <div class="omikuji-box" id="omikuji-box">
+              <span class="omikuji-box-txt">御神籤</span>
+            </div>
+            <div class="omikuji-stick-disp" id="omikuji-stick-disp" hidden></div>
+          </div>
+          <button class="btn" id="omikuji-draw">おみくじを振る</button>
+        </div>
+        <div class="result omikuji-result" id="omikuji-result" hidden></div>
+        <button class="btn ghost" id="omikuji-reset" hidden>もう一度引く</button>
+      </div>
+
+      <!-- 四柱推命 -->
+      <div id="shichu" class="panel">
+        <h2>四柱推命 ― 日干占い</h2>
+        <p class="lead">生年月日から、あなたの本質や宿命を表す「日干（にっかん）」を導きます。</p>
+        <form class="form" id="shichu-form">
+          <label>生年月日 <input type="date" class="birth-input" id="shichu-birth" required></label>
+          <label>生まれた時刻（任意） <input type="time" id="shichu-time"></label>
+          <button class="btn" type="submit">占う</button>
+        </form>
+        <div class="result" id="shichu-result" hidden></div>
       </div>
 
       <!-- 星座占い -->
@@ -143,6 +222,61 @@
         </form>
         <div class="result" id="dream-result" hidden></div>
       </div>
+
+      <!-- 算命学 -->
+      <div id="sanmei" class="panel">
+        <h2>算命学 ― 天中殺</h2>
+        <p class="lead">生年月日から、あなたの宿命を表す「天中殺」のタイプと、注意すべき年を導きます。</p>
+        <form class="form" id="sanmei-form">
+          <label>生年月日 <input type="date" class="birth-input" id="sanmei-birth" required></label>
+          <button class="btn" type="submit">占う</button>
+        </form>
+        <div class="result" id="sanmei-result" hidden></div>
+      </div>
+
+      <!-- 紫微斗数 -->
+      <div id="shibi" class="panel">
+        <h2>紫微斗数</h2>
+        <p class="lead">生年月日と生まれた時刻から命盤をつくり、あなたの命宮に輝く主星を読み解きます。</p>
+        <form class="form" id="shibi-form">
+          <label>生年月日 <input type="date" class="birth-input" id="shibi-birth" required></label>
+          <label>生まれた時刻 <input type="time" id="shibi-time" required></label>
+          <button class="btn" type="submit">占う</button>
+        </form>
+        <p class="sub">時刻が分からない場合は 12:00 で占えますが、結果の精度は下がります。</p>
+        <div class="result" id="shibi-result" hidden></div>
+      </div>
+
+      <!-- 宿曜占星術 -->
+      <div id="sukuyo" class="panel">
+        <h2>宿曜占星術</h2>
+        <p class="lead">生まれた日の月の位置から、27の宿のうちあなたの「本命宿」を導きます。</p>
+        <form class="form" id="sukuyo-form">
+          <label>生年月日 <input type="date" class="birth-input" id="sukuyo-birth" required></label>
+          <button class="btn" type="submit">占う</button>
+        </form>
+        <div class="result" id="sukuyo-result" hidden></div>
+      </div>
+
+      <!-- 易 -->
+      <div id="eki" class="panel">
+        <h2>易占い ― 六十四卦</h2>
+        <p class="lead">占いたいことを一つ心に決めてから、ボタンを押してください。3枚のコインを6回投げて卦を立てます。</p>
+        <button class="btn" id="eki-draw">卦を立てる</button>
+        <div class="result" id="eki-result" hidden></div>
+      </div>
+
+      <!-- 姓名判断 -->
+      <div id="seimei" class="panel">
+        <h2>姓名判断</h2>
+        <p class="lead">姓と名を入力すると、画数から5つの運格を判定します。</p>
+        <form class="form" id="seimei-form">
+          <label>姓 <input type="text" id="seimei-sei" required placeholder="山田" maxlength="6"></label>
+          <label>名 <input type="text" id="seimei-mei" required placeholder="太郎" maxlength="6"></label>
+          <button class="btn" type="submit">占う</button>
+        </form>
+        <div class="result" id="seimei-result" hidden></div>
+      </div>
     </section>
 
     <!-- コラム -->
@@ -159,7 +293,10 @@
   <footer id="site-footer"></footer>
 
   <script src="/data.js"></script>
+  <script src="/koyomi.js"></script>
   <script src="/common.js"></script>
   <script src="/app.js"></script>
+  <script src="/kanji-strokes.js"></script>
+  <script src="/eastern.js"></script>
 </body>
 </html>

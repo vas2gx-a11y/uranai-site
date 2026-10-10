@@ -1,6 +1,6 @@
 // トップページ：各占いのロジック
 
-// ---- タブ切替（#tarot などのハッシュにも対応） ----
+// ---- タブ切替（#tarot, #omikuji などのハッシュにも対応） ----
 function activateTab(id, scroll) {
   const tab = document.querySelector(`.tab[data-tab="${id}"]`);
   if (!tab) return;
@@ -30,7 +30,6 @@ const luckyHtml = (items) => `<div class="lucky">${items.map((t) => `<span>${t}<
 // ---- 判定ロジック ----
 function getZodiac(month, day) {
   if (month === 12 && day >= 22) return ZODIAC[0]; // 山羊座（年末側）
-  // 開始日が遅い順に見て、該当する最初の星座を返す
   for (let i = ZODIAC.length - 1; i >= 1; i--) {
     const [m, d] = ZODIAC[i].from;
     if (month > m || (month === m && day >= d)) return ZODIAC[i];
@@ -59,6 +58,16 @@ function kyuseiNumber(dateStr) {
   while (s > 9) s = String(s).split("").reduce((a, c) => a + Number(c), 0);
   const n = (11 - s) % 9;
   return n === 0 ? 9 : n;
+}
+
+// 四柱推命：日干（2024-01-01 甲子を基準）
+function getDayStem(dateStr) {
+  const [y, m, d] = dateStr.split("-").map(Number);
+  const target = Date.UTC(y, m - 1, d);
+  const base = Date.UTC(2024, 0, 1);
+  const diffDays = Math.round((target - base) / (1000 * 60 * 60 * 24));
+  const stemIdx = ((diffDays % 10) + 10) % 10;
+  return JIKKAN[stemIdx];
 }
 
 // 期間ごとのキー（今週は月曜日の日付）
@@ -91,7 +100,7 @@ function zodiacFortune(sign, period = "day") {
     color: pick(LUCKY_COLORS),
     item: pick(LUCKY_ITEMS),
     spot: pick(LUCKY_SPOTS),
-    rank: total * 100 + cats.reduce((a, c) => a + c.score, 0), // ランキング用
+    rank: total * 100 + cats.reduce((a, c) => a + c.score, 0),
   };
 }
 
@@ -148,6 +157,7 @@ function renderMyBox() {
   const f = zodiacFortune(sign);
   const num = lifePathNumber(birth);
   const ky = KYUSEI[kyuseiNumber(birth)];
+  const stem = getDayStem(birth);
   box.innerHTML = `
     <h3 class="card-title">あなたの今日の運勢</h3>
     <div class="my-summary">
@@ -156,11 +166,12 @@ function renderMyBox() {
         <p class="stars-val big">${stars(f.total)}</p>
         <p>${f.message}</p>
         ${luckyHtml([`ラッキーカラー：${f.color}`, `ラッキーアイテム：${f.item}`, `ラッキースポット：${f.spot}`])}
-        <p class="sub">運命数 ${num}（${NUMEROLOGY[num].title}）／ 本命星 ${ky.name}</p>
+        <p class="sub">日干 ${stem.stem}（${stem.symbol}）／ 運命数 ${num}（${NUMEROLOGY[num].title}）／ 本命星 ${ky.name}</p>
       </div>
     </div>
     <div class="my-actions">
-      <a class="btn small" href="#zodiac">詳しく見る</a>
+      <a class="btn small" href="#zodiac">星座占い</a>
+      <a class="btn small" href="#shichu">四柱推命</a>
       <button class="btn ghost small" id="my-clear">保存した生年月日を削除</button>
     </div>`;
   box.querySelector("#my-clear").addEventListener("click", () => {
@@ -176,18 +187,51 @@ function fillBirthInputs() {
   document.querySelectorAll(".birth-input").forEach((el) => { if (!el.value) el.value = birth; });
 }
 
-// ---- タロット ----
+// ---- タロット（ワンオラクル & スリーカード） ----
+let tarotMode = "single"; // "single" | "spread"
+let spreadCards = [];     // スリーカードで選択されたカード
 const deck = document.getElementById("deck");
 const tarotResult = document.getElementById("tarot-result");
 const tarotReset = document.getElementById("tarot-reset");
+const tarotLead = document.getElementById("tarot-lead");
+const spreadSlots = document.getElementById("tarot-spread-slots");
+const modeBtns = document.querySelectorAll(".tarot-mode-btn");
+
+modeBtns.forEach((btn) => {
+  btn.addEventListener("click", () => {
+    tarotMode = btn.dataset.mode;
+    modeBtns.forEach((b) => b.classList.toggle("active", b === btn));
+    resetTarot();
+  });
+});
+
+function resetTarot() {
+  spreadCards = [];
+  if (tarotMode === "single") {
+    tarotLead.textContent = "心の中で質問を思い浮かべて、カードを1枚選んでください。";
+    spreadSlots.hidden = true;
+  } else {
+    tarotLead.textContent = "「過去」「現在」「未来」の問いを胸に、カードを3枚順番に選んでください。（1枚目：過去）";
+    spreadSlots.hidden = false;
+    for (let i = 0; i < 3; i++) {
+      const box = document.getElementById(`slot-${i}`);
+      const name = document.getElementById(`slot-name-${i}`);
+      box.innerHTML = `<span class="slot-icon">✦</span>`;
+      box.classList.remove("filled");
+      name.textContent = "未選択";
+    }
+  }
+  renderDeck();
+}
 
 function renderDeck() {
   deck.innerHTML = "";
-  for (let i = 0; i < 12; i++) {
+  const count = tarotMode === "single" ? 12 : 14;
+  for (let i = 0; i < count; i++) {
     const card = document.createElement("button");
     card.className = "tarot-card";
     card.setAttribute("aria-label", `カード${i + 1}`);
-    card.addEventListener("click", drawTarot);
+    card.addEventListener("click", () => onCardClick(card));
     deck.appendChild(card);
   }
   deck.hidden = false;
@@ -195,23 +239,259 @@ function renderDeck() {
   tarotReset.hidden = true;
 }
 
-function drawTarot() {
-  const card = TAROT[Math.floor(Math.random() * TAROT.length)];
-  const reversed = Math.random() < 0.5;
-  const pos = reversed ? "逆位置" : "正位置";
-  deck.hidden = true;
+function onCardClick(cardEl) {
+  if (cardEl.classList.contains("picked")) return;
+
+  if (tarotMode === "single") {
+    // 1枚引き
+    const card = TAROT[Math.floor(Math.random() * TAROT.length)];
+    const reversed = Math.random() < 0.5;
+    const pos = reversed ? "逆位置" : "正位置";
+    deck.hidden = true;
+    show(tarotResult, `
+      <p class="symbol">🃏</p>
+      <h3>${card.name}</h3>
+      <p class="sub">${card.en}　<span class="badge ${reversed ? "rev" : ""}">${pos}</span></p>
+      <p class="tarot-body">${reversed ? card.rev : card.up}</p>
+      <a class="more" href="/column/tarot.html">大アルカナ22枚の意味一覧 →</a>
+      ${shareButtons(`【${SITE_NAME}】タロットで「${card.name}（${pos}）」を引きました🃏`)}
+    `);
+    tarotReset.hidden = false;
+  } else {
+    // 3枚引き
+    cardEl.classList.add("picked");
+    cardEl.disabled = true;
+
+    // 重複しないように選ぶ
+    const chosenNames = spreadCards.map((c) => c.card.name);
+    const available = TAROT.filter((c) => !chosenNames.includes(c.name));
+    const card = available[Math.floor(Math.random() * available.length)];
+    const reversed = Math.random() < 0.5;
+    const slotIdx = spreadCards.length;
+
+    spreadCards.push({ card, reversed, slotIdx });
+
+    const slotBox = document.getElementById(`slot-${slotIdx}`);
+    const slotName = document.getElementById(`slot-name-${slotIdx}`);
+    const pos = reversed ? "逆位置" : "正位置";
+    slotBox.innerHTML = `<span>🃏</span>`;
+    slotBox.classList.add("filled");
+    slotName.innerHTML = `<strong>${card.name}</strong><br><small class="${reversed ? "rev-txt" : ""}">${pos}</small>`;
+
+    if (spreadCards.length === 1) {
+      tarotLead.textContent = "2枚目のカードを選んでください。（2枚目：現在）";
+    } else if (spreadCards.length === 2) {
+      tarotLead.textContent = "3枚目のカードを選んでください。（3枚目：未来）";
+    } else if (spreadCards.length === 3) {
+      tarotLead.textContent = "3枚のカードが揃いました。";
+      deck.hidden = true;
+      setTimeout(renderSpreadResult, 400);
+    }
+  }
+}
+
+function renderSpreadResult() {
+  const [cPast, cPres, cFut] = spreadCards;
+  const labels = [
+    { title: "過去（原因・これまでの流れ）", item: cPast, key: "past" },
+    { title: "現在（直面している状況・課題）", item: cPres, key: "present" },
+    { title: "未来（これからの展開・可能性）", item: cFut, key: "future" },
+  ];
+
+  // 総合メッセージの算出
+  const revCount = spreadCards.filter((c) => c.reversed).length;
+  let overall = "";
+  if (revCount === 0) {
+    overall = "3枚ともすべて「正位置」という素晴らしい展開です。過去からの努力が現在の自信を生み、未来に向かって力強く前進できる追い風が吹いています。迷わず直感を信じて進んでください。";
+  } else if (revCount === 3) {
+    overall = "3枚すべてが「逆位置」として現れました。今は無理に動くよりも、これまでのやり方や心構えを丁寧に見直す大切なタイミングです。焦りを手放し、基礎を固めることで状況は必ず好転します。";
+  } else {
+    overall = "正位置と逆位置がバランスよく現れ、人生のリアルな過渡期を映し出しています。過去の教訓を現在に活かし、未来のヒントを意識することで、より良い結果を引き寄せられるでしょう。";
+  }
+
+  const shareText = `【${SITE_NAME}】タロット3枚引き：過去【${cPast.card.name}】現在【${cPres.card.name}】未来【${cFut.card.name}】`;
+
   show(tarotResult, `
-    <p class="symbol">🃏</p>
-    <h3>${card.name}</h3>
-    <p class="sub">${card.en}　<span class="badge ${reversed ? "rev" : ""}">${pos}</span></p>
-    <p>${reversed ? card.rev : card.up}</p>
+    <h3 class="tarot-spread-title">スリーカード・スプレッドの解釈</h3>
+    <p class="sub">過去から現在、そして未来へとつながる時間の流れ</p>
+    <div class="spread-results-grid">
+      ${labels.map(({ title, item, key }) => {
+        const pos = item.reversed ? "逆位置" : "正位置";
+        const text = item.card.spread ? item.card.spread[key][item.reversed ? "rev" : "up"] : (item.reversed ? item.card.rev : item.card.up);
+        return `
+          <div class="spread-res-card">
+            <span class="spread-step-tag">${title}</span>
+            <div class="spread-res-header">
+              <span class="symbol small">🃏</span>
+              <div>
+                <h4>${item.card.name}</h4>
+                <p class="sub">${item.card.en} <span class="badge ${item.reversed ? "rev" : ""}">${pos}</span></p>
+              </div>
+            </div>
+            <p class="spread-text">${text}</p>
+          </div>`;
+      }).join("")}
+    </div>
+    <div class="spread-overall-card">
+      <h4>✦ 3枚が導く総合メッセージ</h4>
+      <p>${overall}</p>
+    </div>
     <a class="more" href="/column/tarot.html">大アルカナ22枚の意味一覧 →</a>
-    ${shareButtons(`【${SITE_NAME}】タロットで「${card.name}（${pos}）」を引きました🃏`)}
+    ${shareButtons(shareText)}
   `);
   tarotReset.hidden = false;
 }
 
-tarotReset.addEventListener("click", renderDeck);
+tarotReset.addEventListener("click", resetTarot);
+
+// ---- おみくじ ----
+const omikujiDrawBtn = document.getElementById("omikuji-draw");
+const omikujiBoxWrap = document.getElementById("omikuji-cylinder-wrap");
+const omikujiStickDisp = document.getElementById("omikuji-stick-disp");
+const omikujiResult = document.getElementById("omikuji-result");
+const omikujiResetBtn = document.getElementById("omikuji-reset");
+
+function drawOmikuji() {
+  if (omikujiDrawBtn.disabled) return;
+  omikujiDrawBtn.disabled = true;
+  omikujiResult.hidden = true;
+  omikujiResetBtn.hidden = true;
+  omikujiStickDisp.hidden = true;
+
+  // 筒を振るアニメーション
+  omikujiBoxWrap.classList.add("shaking");
+
+  setTimeout(() => {
+    omikujiBoxWrap.classList.remove("shaking");
+    // おみくじ棒を出す
+    const item = OMIKUJI[Math.floor(Math.random() * OMIKUJI.length)];
+    omikujiStickDisp.textContent = `${item.grade}`;
+    omikujiStickDisp.hidden = false;
+    omikujiStickDisp.classList.add("slide-out");
+
+    setTimeout(() => {
+      renderOmikujiResult(item);
+      omikujiDrawBtn.disabled = false;
+    }, 500);
+  }, 900);
+}
+
+function renderOmikujiResult(item) {
+  show(omikujiResult, `
+    <div class="omikuji-paper">
+      <div class="omikuji-header">
+        <span class="omikuji-crest">⛩️ 星読み神社 御神籤 ⛩️</span>
+        <h3 class="omikuji-grade grade-${item.grade}">${item.grade}</h3>
+        <p class="omikuji-en">${item.gradeEn}</p>
+      </div>
+
+      <div class="omikuji-poem">
+        <p>${item.poem}</p>
+      </div>
+
+      <div class="omikuji-message">
+        <p>${item.message}</p>
+      </div>
+
+      <div class="omikuji-details">
+        <div class="omikuji-row"><strong>【願　望】</strong><span>${item.wish}</span></div>
+        <div class="omikuji-row"><strong>【恋　愛】</strong><span>${item.love}</span></div>
+        <div class="omikuji-row"><strong>【仕・学】</strong><span>${item.work}</span></div>
+        <div class="omikuji-row"><strong>【健　康】</strong><span>${item.health}</span></div>
+        <div class="omikuji-row"><strong>【金　運】</strong><span>${item.money}</span></div>
+      </div>
+
+      <div class="omikuji-lucky">
+        <span>吉方位：${item.direction}</span>
+        <span>縁起物：${item.item}</span>
+      </div>
+    </div>
+    ${shareButtons(`【${SITE_NAME}】今日のおみくじは【${item.grade}】でした！「${item.poem}」⛩️`)}
+  `);
+  omikujiResetBtn.hidden = false;
+}
+
+if (omikujiDrawBtn) {
+  omikujiDrawBtn.addEventListener("click", drawOmikuji);
+  omikujiResetBtn.addEventListener("click", () => {
+    omikujiResult.hidden = true;
+    omikujiResetBtn.hidden = true;
+    omikujiStickDisp.hidden = true;
+    omikujiStickDisp.classList.remove("slide-out");
+    document.getElementById("omikuji").scrollIntoView({ behavior: "smooth", block: "start" });
+  });
+}
+
+// ---- 四柱推命（日干占い） ----
+const shichuForm = document.getElementById("shichu-form");
+if (shichuForm) {
+  shichuForm.addEventListener("submit", (e) => {
+    e.preventDefault();
+    const birthVal = document.getElementById("shichu-birth").value;
+    const stem = getDayStem(birthVal);
+    let dayKanshiStr = "";
+    if (typeof fourPillars === "function") {
+      const [by, bm, bd] = birthVal.split("-").map(Number);
+      const fp = fourPillars(by, bm, bd);
+      dayKanshiStr = ` <small>（日柱：${kanshiName(fp.day)}）</small>`;
+    }
+
+    // 今日の干支アドバイス用シード
+    const rand = seededRandom("shichu" + todayStr() + stem.stem);
+    const pick = (arr) => arr[Math.floor(rand() * arr.length)];
+    const todayScore = 1 + Math.floor(rand() * 5);
+
+    show(document.getElementById("shichu-result"), `
+      <div class="shichu-card">
+        <div class="shichu-hero">
+          <p class="symbol" style="color: ${stem.color};">${stem.icon}</p>
+          <h3>あなたの本質：日干「${stem.stem}（${stem.kana}）」${dayKanshiStr}</h3>
+          <p class="sub">${stem.element} ／ 象徴：${stem.symbol}</p>
+          <p class="shichu-catch">「${stem.catch}」</p>
+        </div>
+
+        <div class="shichu-section">
+          <h4>✦ 基本性格・本質</h4>
+          <p>${stem.personality}</p>
+        </div>
+
+        <div class="grid-2 shichu-features">
+          <div class="feature-box">
+            <h5>長所・強み</h5>
+            <ul>${stem.strengths.map((s) => `<li>${s}</li>`).join("")}</ul>
+          </div>
+          <div class="feature-box">
+            <h5>気をつけたい点</h5>
+            <ul>${stem.weaknesses.map((w) => `<li>${w}</li>`).join("")}</ul>
+          </div>
+        </div>
+
+        <div class="shichu-section">
+          <h4>✦ 仕事・才能</h4>
+          <p>${stem.work}</p>
+        </div>
+
+        <div class="shichu-section">
+          <h4>✦ 恋愛・パートナーシップ</h4>
+          <p>${stem.love}</p>
+        </div>
+
+        <div class="shichu-section highlight">
+          <h4>✦ 最高の相性（干合）</h4>
+          <p>${stem.compat}</p>
+        </div>
+
+        <div class="shichu-section today-advice">
+          <h4>✦ 今日の運気アドバイス</h4>
+          <p class="total">日干の調和度 <span class="stars-val">${stars(todayScore)}</span></p>
+          <p>${stem.advice}</p>
+        </div>
+
+        ${shareButtons(`【${SITE_NAME}】四柱推命で私の日干は「${stem.stem}（${stem.kana}）― ${stem.symbol}」でした📜`)}
+      </div>
+    `);
+  });
+}
 
 // ---- 星座占い ----
 document.getElementById("zodiac-form").addEventListener("submit", (e) => {
@@ -240,17 +520,74 @@ document.getElementById("zodiac-form").addEventListener("submit", (e) => {
 });
 
 // ---- 数秘術 ----
+// 数字の各桁を足す
+const digitSum = (n) => String(n).split("").reduce((s, c) => s + Number(c), 0);
+
+// 1桁（またはマスターナンバー）になるまで足し、途中経過も返す
+function reduceSteps(n, keepMaster = true) {
+  const steps = [];
+  while (n > 9 && !(keepMaster && [11, 22, 33].includes(n))) {
+    steps.push(`${String(n).split("").join("+")} = ${digitSum(n)}`);
+    n = digitSum(n);
+  }
+  return { n, steps };
+}
+
 document.getElementById("num-form").addEventListener("submit", (e) => {
   e.preventDefault();
-  const num = lifePathNumber(document.getElementById("num-birth").value);
+  const birth = document.getElementById("num-birth").value;
+  const [, bm, bd] = birth.split("-").map(Number);
+  const num = lifePathNumber(birth);
   const info = NUMEROLOGY[num];
+  const dt = NUMEROLOGY_DETAIL[num];
+
+  // 計算過程
+  const digits = birth.replace(/\D/g, "").split("");
+  const total = digits.reduce((s, c) => s + Number(c), 0);
+  const calc = [`${digits.join("+")} = ${total}`, ...reduceSteps(total).steps];
+
+  // 誕生数・個人年数・個人月数
+  const birthDay = reduceSteps(bd).n; // 11日・22日はマスターナンバーのまま
+  const now = new Date();
+  const py = reduceSteps(digitSum(bm) + digitSum(bd) + digitSum(now.getFullYear()), false).n;
+  const pm = reduceSteps(py + now.getMonth() + 1, false).n;
+  const year = PERSONAL_YEAR[py];
+
   show(document.getElementById("num-result"), `
     <p class="symbol">${num}</p>
     <h3>運命数 ${num}：${info.title}</h3>
-    <p>${info.text}</p>
+    <p class="sub">計算：${calc.join(" → ")}</p>
     ${luckyHtml(info.keywords)}
+
+    <div class="num-section">
+      <h4>✦ 基本性格</h4>
+      <p>${dt.personality}</p>
+    </div>
+    <div class="grid-2 num-features">
+      <div class="feature-box"><h5>長所・強み</h5><ul>${dt.strengths.map((t) => `<li>${t}</li>`).join("")}</ul></div>
+      <div class="feature-box"><h5>気をつけたい点</h5><ul>${dt.weaknesses.map((t) => `<li>${t}</li>`).join("")}</ul></div>
+    </div>
+    <div class="num-section"><h4>✦ 仕事・適職</h4><p>${dt.work}</p></div>
+    <div class="num-section"><h4>✦ 恋愛・パートナーシップ</h4><p>${dt.love}</p></div>
+    <div class="num-section"><h4>✦ 相性の良い運命数</h4><p>${dt.compat.map((n) => `<strong>${n}</strong>（${NUMEROLOGY[n].title}）`).join("、")}</p></div>
+
+    <div class="num-section">
+      <h4>✦ 誕生数 ${birthDay}</h4>
+      <p>生まれた日（${bd}日）が表す、生まれ持った才能：<strong>${BIRTH_DAY_TEXT[birthDay]}</strong></p>
+    </div>
+    <div class="num-section highlight">
+      <h4>✦ ${now.getFullYear()}年のあなた：個人年数 ${py}「${year.theme}」</h4>
+      <p>${year.text}</p>
+      <p class="sub">今月（${now.getMonth() + 1}月）の個人月数は ${pm}「${PERSONAL_YEAR[pm].theme}」。月のテーマとして意識してみて。</p>
+    </div>
+    <div class="num-section today-advice">
+      <h4>✦ あなたへのメッセージ</h4>
+      <p>${dt.advice}</p>
+      ${luckyHtml([`ラッキーカラー：${dt.color}`])}
+    </div>
+
     <a class="more" href="/column/numerology.html">すべての運命数の意味を見る →</a>
-    ${shareButtons(`【${SITE_NAME}】私の運命数は「${num}：${info.title}」でした🔢`)}
+    ${shareButtons(`【${SITE_NAME}】私の運命数は「${num}：${info.title}」、今年は「${year.theme}」でした🔢`)}
   `);
 });
 
@@ -269,7 +606,6 @@ document.getElementById("compat-form").addEventListener("submit", (e) => {
   const na = lifePathNumber(a), nb = lifePathNumber(b);
   const el = elementCompat(sa.element, sb.element);
 
-  // 運命数が同じ・近いと加点。同じ組み合わせなら毎回同じ点数になる
   const rand = seededRandom([a, b].sort().join("|"));
   const numBonus = na === nb ? 8 : Math.abs((na % 9) - (nb % 9)) <= 2 ? 4 : 0;
   const score = Math.min(99, el.score + numBonus + Math.floor(rand() * 8) - 2);
@@ -338,7 +674,7 @@ document.getElementById("dream-form").addEventListener("submit", (e) => {
 });
 
 // ---- 初期表示 ----
-renderDeck();
+resetTarot();
 renderRanking();
 renderMoon();
 renderMyBox();

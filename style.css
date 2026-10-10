@@ -187,6 +187,138 @@ select option { background: var(--bg2); }
 .breadcrumb a { color: var(--muted); }
 .todo { color: #ffb3c7; }
 
+/* ---- タロット モード切替 & スプレッド ---- */
+.tarot-mode-select { display: flex; justify-content: center; gap: 8px; margin: 16px 0; }
+.tarot-mode-btn {
+  padding: 6px 18px; border-radius: 999px; border: 1px solid var(--border);
+  background: var(--card); color: var(--muted); cursor: pointer; font: inherit; font-size: .88rem;
+  transition: all .2s;
+}
+.tarot-mode-btn.active { background: var(--accent); color: #fff; border-color: var(--accent); }
+
+.spread-slots { display: flex; justify-content: center; gap: 16px; margin: 20px 0; flex-wrap: wrap; }
+.spread-slot { display: flex; flex-direction: column; align-items: center; gap: 6px; min-width: 85px; }
+.slot-tag { font-size: .8rem; color: var(--gold); font-weight: 700; }
+.slot-box {
+  width: 68px; height: 104px; border-radius: 8px; border: 2px dashed var(--border);
+  display: grid; place-items: center; background: rgba(255, 255, 255, 0.02);
+  transition: all .3s;
+}
+.slot-box .slot-icon { color: var(--muted); font-size: 1.2rem; }
+.slot-box.filled {
+  border: 1px solid var(--gold);
+  background: repeating-linear-gradient(45deg, #2a2160 0 6px, #231b52 6px 12px);
+  box-shadow: 0 4px 12px #9b7bff55;
+  transform: translateY(-2px);
+}
+.slot-box.filled span { font-size: 1.8rem; }
+.slot-name { font-size: .8rem; margin: 0; color: var(--muted); text-align: center; line-height: 1.3; }
+.rev-txt { color: #ff85a0; }
+.tarot-card.picked { opacity: .3; pointer-events: none; transform: scale(.92); }
+.tarot-body { font-size: 1rem; line-height: 1.8; }
+
+.tarot-spread-title { font-size: 1.3rem; color: var(--gold); margin: 0 0 4px; }
+.spread-results-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; margin: 20px 0; }
+.spread-res-card {
+  background: rgba(255, 255, 255, 0.04); border: 1px solid var(--border); border-radius: 12px;
+  padding: 16px 14px; display: flex; flex-direction: column;
+}
+.spread-step-tag { font-size: .78rem; color: var(--gold); font-weight: 700; margin-bottom: 8px; }
+.spread-res-header { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; }
+.spread-res-header h4 { margin: 0; font-size: 1.05rem; color: var(--text); }
+.spread-res-header .symbol.small { font-size: 1.6rem; }
+.spread-text { font-size: .88rem; color: var(--text); line-height: 1.7; margin: 0; }
+.spread-overall-card {
+  background: rgba(155, 123, 255, 0.08); border: 1px solid rgba(155, 123, 255, 0.3);
+  border-radius: 12px; padding: 16px; margin: 16px 0;
+}
+.spread-overall-card h4 { margin: 0 0 6px; color: var(--gold); font-size: 1rem; }
+.spread-overall-card p { margin: 0; font-size: .92rem; line-height: 1.8; }
+
+/* ---- おみくじ ---- */
+.today-omikuji-banner { margin-top: 16px; background: linear-gradient(135deg, rgba(255,255,255,0.06), rgba(232, 199, 122, 0.08)); }
+.omikuji-banner-inner { display: flex; align-items: center; gap: 16px; }
+.omikuji-banner-icon { font-size: 2.2rem; }
+.omikuji-banner-text { flex: 1; }
+.omikuji-banner-text .card-title { margin: 0; font-size: 1.15rem; }
+.omikuji-banner-text .sub { margin: 2px 0 0; }
+
+.omikuji-stage { text-align: center; margin: 24px 0 16px; }
+.omikuji-cylinder-wrap {
+  position: relative; width: 110px; height: 140px; margin: 0 auto 20px;
+  display: flex; flex-direction: column; align-items: center; justify-content: flex-end;
+}
+.omikuji-cylinder-wrap.shaking {
+  animation: shakeCylinder .25s infinite ease-in-out;
+}
+@keyframes shakeCylinder {
+  0%, 100% { transform: rotate(0deg) translateY(0); }
+  25% { transform: rotate(-10deg) translateY(-8px); }
+  75% { transform: rotate(10deg) translateY(8px); }
+}
+.omikuji-box {
+  width: 82px; height: 108px; border-radius: 12px 12px 6px 6px;
+  background: linear-gradient(135deg, #a03522, #6b1406); border: 2px solid var(--gold);
+  box-shadow: 0 6px 18px rgba(0,0,0,0.45); display: grid; place-items: center; z-index: 2;
+}
+.omikuji-box-txt {
+  writing-mode: vertical-rl; font-family: "Shippori Mincho", serif;
+  font-size: 1.15rem; font-weight: 700; color: var(--gold); letter-spacing: .25em;
+}
+.omikuji-stick-disp {
+  position: absolute; top: 0; width: 26px; height: 65px;
+  background: #f1d8a5; border: 1px solid #b5883d; border-radius: 4px; color: #5c2f0b;
+  writing-mode: vertical-rl; font-size: .85rem; font-weight: 700; letter-spacing: .1em;
+  display: grid; place-items: center; box-shadow: 0 3px 8px rgba(0,0,0,0.4); z-index: 1;
+}
+.omikuji-stick-disp.slide-out {
+  animation: slideStick .45s cubic-bezier(0.18, 0.89, 0.32, 1.28) forwards;
+}
+@keyframes slideStick {
+  from { transform: translateY(40px); opacity: 0; }
+  to { transform: translateY(-40px); opacity: 1; }
+}
+
+.omikuji-result { background: linear-gradient(180deg, rgba(255,253,245,0.06), rgba(255,250,235,0.02)); border: 2px solid var(--gold); }
+.omikuji-paper { max-width: 480px; margin: 0 auto; text-align: left; }
+.omikuji-header { text-align: center; border-bottom: 1px dashed var(--border); padding-bottom: 14px; margin-bottom: 14px; }
+.omikuji-crest { font-size: .85rem; color: var(--gold); letter-spacing: .12em; display: block; margin-bottom: 6px; }
+.omikuji-grade { font-family: "Shippori Mincho", serif; font-size: 3.2rem; margin: 0; letter-spacing: .2em; font-weight: 700; }
+.grade-大吉 { color: #ff5252; text-shadow: 0 0 16px #ff525266; }
+.grade-中吉 { color: #ff9100; text-shadow: 0 0 16px #ff910066; }
+.grade-小吉 { color: #ffab40; text-shadow: 0 0 16px #ffab4066; }
+.grade-吉 { color: #69f0ae; text-shadow: 0 0 16px #69f0ae66; }
+.grade-末吉 { color: #40c4ff; text-shadow: 0 0 16px #40c4ff66; }
+.grade-凶 { color: #b388ff; text-shadow: 0 0 16px #b388ff66; }
+.omikuji-en { font-size: .85rem; color: var(--muted); margin: 0; letter-spacing: .08em; }
+.omikuji-poem {
+  text-align: center; font-family: "Shippori Mincho", serif; font-size: 1.1rem;
+  padding: 14px 12px; margin: 14px 0; background: rgba(0, 0, 0, 0.25); border-radius: 8px;
+  color: var(--gold); line-height: 1.9;
+}
+.omikuji-message { font-size: .95rem; line-height: 1.85; margin: 14px 0; }
+.omikuji-details { border-top: 1px dashed var(--border); border-bottom: 1px dashed var(--border); padding: 12px 0; margin: 14px 0; display: grid; gap: 8px; }
+.omikuji-row { display: flex; font-size: .92rem; }
+.omikuji-row strong { min-width: 5.5em; color: var(--gold); }
+.omikuji-row span { flex: 1; }
+.omikuji-lucky { display: flex; justify-content: center; gap: 16px; font-size: .85rem; color: var(--muted); flex-wrap: wrap; margin-top: 12px; }
+
+/* ---- 四柱推命 ---- */
+.shichu-card { display: flex; flex-direction: column; gap: 18px; }
+.shichu-hero { text-align: center; border-bottom: 1px solid var(--border); padding-bottom: 16px; }
+.shichu-hero .symbol { margin: 0; font-size: 3.2rem; }
+.shichu-hero h3 { margin: 6px 0 2px; }
+.shichu-catch { font-family: "Shippori Mincho", serif; font-size: 1.15rem; color: var(--gold); margin: 6px 0 0; font-weight: 500; }
+.shichu-section { border-left: 3px solid var(--accent); padding-left: 14px; }
+.shichu-section h4 { margin: 0 0 6px; color: var(--gold); font-size: .98rem; }
+.shichu-section p { margin: 0; font-size: .92rem; line-height: 1.8; }
+.shichu-section.highlight { border-left-color: var(--gold); background: rgba(232, 199, 122, 0.06); padding: 12px 14px; border-radius: 0 8px 8px 0; }
+.shichu-section.today-advice { border-left-color: #69f0ae; background: rgba(105, 240, 174, 0.06); padding: 12px 14px; border-radius: 0 8px 8px 0; }
+.shichu-features .feature-box { background: rgba(255, 255, 255, 0.03); border: 1px solid var(--border); border-radius: 10px; padding: 12px 16px; }
+.feature-box h5 { margin: 0 0 8px; color: var(--gold); font-size: .95rem; }
+.feature-box ul { margin: 0; padding-left: 18px; font-size: .88rem; }
+.feature-box li { margin-bottom: 4px; }
+
 /* ---- フッター ---- */
 .site-footer { text-align: center; color: var(--muted); font-size: .8rem; padding: 32px 16px 40px; border-top: 1px solid var(--border); margin-top: 40px; position: relative; }
 .site-footer p { margin: 0; }
@@ -201,4 +333,57 @@ select option { background: var(--bg2); }
   .global-nav a { padding: 12px 16px; border-top: 1px solid var(--border); }
   .grid-2, .cats { grid-template-columns: 1fr; }
   .tabs { justify-content: flex-start; width: auto; }
+  .spread-results-grid { grid-template-columns: 1fr; }
+  .omikuji-banner-inner { flex-direction: column; text-align: center; }
+  .shichu-features { grid-template-columns: 1fr; }
 }
+
+
+/* ---- 東洋占術 ---- */
+.menu-group { font-size: 1rem; color: var(--gold); margin: 20px 0 10px; text-align: left; }
+.menu-group:first-of-type { margin-top: 0; }
+input[type="time"] { font: inherit; color: var(--text); background: var(--card); border: 1px solid var(--border); border-radius: 8px; padding: 8px 12px; color-scheme: dark; }
+
+.meishiki { width: 100%; max-width: 360px; border-collapse: collapse; text-align: center; margin: 8px 0; }
+.meishiki th { font-size: .8rem; color: var(--muted); font-weight: 400; padding: 4px; }
+.meishiki td { font-family: "Shippori Mincho", serif; font-size: 1.6rem; padding: 2px; border: 1px solid var(--border); }
+.gogyo { display: grid; gap: 6px; max-width: 360px; margin: 8px 0; }
+.gogyo-row { display: grid; grid-template-columns: 1.5em 1fr 1.5em; gap: 8px; align-items: center; }
+.gogyo-bar { height: 10px; background: var(--border); border-radius: 999px; overflow: hidden; }
+.gogyo-bar span { display: block; height: 100%; border-radius: 999px; }
+.g-木 { background: #5cb85c; } .g-火 { background: #e8604c; } .g-土 { background: #c9a35c; } .g-金 { background: #d8d8e0; } .g-水 { background: #4f8fe0; }
+
+.hex-pair { display: flex; justify-content: center; align-items: center; gap: 24px; text-align: center; }
+.hex { display: flex; flex-direction: column; gap: 6px; width: 90px; margin: 0 auto 4px; }
+.yao { display: flex; gap: 12px; height: 10px; }
+.yao span { flex: 1; background: var(--gold); border-radius: 2px; }
+.yao.chg span { background: #ff7aa2; }
+.hex-arrow { font-size: 1.5rem; color: var(--muted); }
+
+.kaku-table { width: 100%; border-collapse: collapse; margin: 12px 0; font-size: .9rem; }
+.kaku-table th, .kaku-table td { border-bottom: 1px solid var(--border); padding: 8px 6px; text-align: left; vertical-align: middle; }
+.kaku-table th { color: var(--gold); font-weight: 500; white-space: nowrap; }
+.kaku-num { white-space: nowrap; }
+.kaku-desc { color: var(--muted); font-size: .8rem; }
+.kikkyo { display: inline-block; min-width: 3em; text-align: center; padding: 2px 8px; border-radius: 999px; font-size: .8rem; white-space: nowrap; }
+.k-daikichi { background: #e8c77a; color: #2a1f00; } .k-kichi { background: #9b7bff; color: #fff; }
+.k-hankichi { background: #4a4470; color: #fff; } .k-kyo { background: #6b3348; color: #fff; }
+
+details.card { margin-top: 12px; padding: 12px 16px; }
+details.card summary { cursor: pointer; color: var(--gold); }
+.palaces { width: 100%; border-collapse: collapse; font-size: .85rem; margin-top: 8px; }
+.palaces th, .palaces td { border-bottom: 1px solid var(--border); padding: 6px; text-align: left; }
+.palaces th { color: var(--muted); font-weight: 400; white-space: nowrap; }
+
+@media (max-width: 480px) {
+  .kaku-desc { display: none; }
+}
+
+/* ---- 数秘術の詳細 ---- */
+.num-section { border-left: 3px solid var(--accent); padding-left: 14px; margin: 18px 0; }
+.num-section h4 { margin: 0 0 6px; color: var(--gold); font-size: .98rem; }
+.num-section p { margin: 0 0 4px; font-size: .92rem; line-height: 1.8; }
+.num-section.highlight { border-left-color: var(--gold); background: rgba(232, 199, 122, 0.06); padding: 12px 14px; border-radius: 0 8px 8px 0; }
+.num-section.today-advice { border-left-color: #69f0ae; background: rgba(105, 240, 174, 0.06); padding: 12px 14px; border-radius: 0 8px 8px 0; }
+.num-features { margin: 18px 0; }
+.num-features .feature-box { background: rgba(255, 255, 255, 0.03); border: 1px solid var(--border); border-radius: 10px; padding: 12px 16px; }
