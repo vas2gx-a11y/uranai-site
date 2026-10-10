@@ -674,17 +674,22 @@ const md = (d) => `${d.getMonth() + 1}/${d.getDate()}`;
 document.getElementById("match-form").addEventListener("submit", (e) => {
   e.preventDefault();
   const me = document.getElementById("match-birth").value;
-  const year = Number(document.getElementById("match-year").value);
+  const year = Number(document.getElementById("match-year").value) || 0;
+  // 生まれ年が空欄なら、自分の生まれ年の前後5年を対象にする
+  const myYear = Number(me.slice(0, 4));
+  const [from, to] = year ? [year, year] : [myYear - 5, myYear + 5];
+  const range = from === to ? `${from}年生まれ` : `${from}〜${to}年生まれ`;
   const days = [];
-  for (let d = new Date(year, 0, 1); d.getFullYear() === year; d.setDate(d.getDate() + 1)) {
+  for (let d = new Date(from, 0, 1); d.getFullYear() <= to; d.setDate(d.getDate() + 1)) {
     const date = new Date(d);
     const c = compatScore(me, ymd(date));
     days.push({ date, score: c.score, sign: c.sb, num: c.nb });
   }
 
-  // ベスト生年月日：点数の高い順（同点は日付順）、同じ星座に偏らないよう各星座3日まで
+  // ベスト生年月日：点数の高い順（同点は自分と生まれ年が近い順→日付順）、同じ星座に偏らないよう各星座3日まで
   const perSign = {};
-  const best = [...days].sort((x, y) => y.score - x.score || x.date - y.date)
+  const yearGap = (d) => Math.abs(d.date.getFullYear() - myYear);
+  const best = [...days].sort((x, y) => y.score - x.score || yearGap(x) - yearGap(y) || x.date - y.date)
     .filter((d) => (perSign[d.sign.name] = (perSign[d.sign.name] || 0) + 1) <= 3)
     .slice(0, 10);
 
@@ -692,28 +697,37 @@ document.getElementById("match-form").addEventListener("submit", (e) => {
   const signs = ZODIAC.map((z) => {
     const list = days.filter((d) => d.sign === z);
     const runs = [];
-    list.forEach((d, i) => {
-      if (i && d.date - list[i - 1].date === 864e5) runs[runs.length - 1][1] = d.date;
+    list.filter((d) => d.date.getFullYear() === from).forEach((d, i, first) => {
+      if (i && d.date - first[i - 1].date === 864e5) runs[runs.length - 1][1] = d.date;
       else runs.push([d.date, d.date]);
     });
     const avg = Math.round(list.reduce((t, d) => t + d.score, 0) / list.length);
     return { z, avg, period: runs.map(([f, t]) => `${md(f)}〜${md(t)}`).join("・") };
   }).sort((x, y) => y.avg - x.avg);
 
+  // 運命数ごとの平均点（上位3つ）
+  const nums = [...new Set(days.map((d) => d.num))].map((n) => {
+    const list = days.filter((d) => d.num === n);
+    return { n, avg: Math.round(list.reduce((t, d) => t + d.score, 0) / list.length) };
+  }).sort((x, y) => y.avg - x.avg || x.n - y.n).slice(0, 3);
+
   const mySign = zodiacOf(me);
+  const dateLabel = (d) => `${from === to ? "" : `${d.getFullYear()}年`}${d.getMonth() + 1}月${d.getDate()}日`;
   show(document.getElementById("match-result"), `
-    <h3>${year}年生まれの相性ベスト10</h3>
+    <h3>${range}の相性ベスト10</h3>
     <p class="sub">あなた：${mySign.symbol} ${mySign.name}・運命数${lifePathNumber(me)} ／ 日付を押すと詳しい相性を占えます</p>
     <ol class="match-list">
-      ${best.map((d, i) => `<li><span class="match-rank">${i + 1}</span><button type="button" class="chip" data-date="${ymd(d.date)}">${d.date.getMonth() + 1}月${d.date.getDate()}日</button>
+      ${best.map((d, i) => `<li><span class="match-rank">${i + 1}</span><button type="button" class="chip" data-date="${ymd(d.date)}">${dateLabel(d.date)}</button>
         <span>${d.sign.symbol} ${d.sign.name}・運命数${d.num}</span><strong>${d.score}点</strong></li>`).join("")}
     </ol>
-    <h4 class="detail-title">✦ 星座別の相性（${year}年生まれ）</h4>
+    <h4 class="detail-title">✦ 相性のいい運命数</h4>
+    <p>${nums.map((x) => `<strong>${x.n}</strong>（${NUMEROLOGY[x.n].title}）平均${x.avg}点`).join("、")}</p>
+    <h4 class="detail-title">✦ 星座別の相性（${range}）</h4>
     <div class="match-signs">
       ${signs.map((s) => `<div class="match-sign"><span>${s.z.symbol} ${s.z.name}</span><span class="sub">${s.period}</span>
         <span class="meter-bar"><span style="width:${s.avg}%"></span></span><strong>${s.avg}点</strong></div>`).join("")}
     </div>
-    ${shareButtons(`【${SITE_NAME}】${mySign.name}の私と相性のいい${year}年生まれの誕生日は${best[0].date.getMonth() + 1}月${best[0].date.getDate()}日でした💞`)}
+    ${shareButtons(`【${SITE_NAME}】${mySign.name}の私と相性のいい誕生日は${dateLabel(best[0].date)}でした💞`)}
   `);
 });
 
