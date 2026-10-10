@@ -171,6 +171,7 @@ function renderMyBox() {
       </div>
     </div>
     <div class="my-actions">
+      <a class="btn small" href="#sogo">総合鑑定</a>
       <a class="btn small" href="#zodiac">星座占い</a>
       <a class="btn small" href="#shichu">四柱推命</a>
       <button class="btn ghost small" type="button" data-open-profile>プロフィールを編集</button>

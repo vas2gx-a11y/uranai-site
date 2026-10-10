@@ -13,6 +13,7 @@
 - `kyusei.js` … 九星気学（本命星・月命星、年盤・月盤・日盤と吉方位）
 - `profile.js` … プロフィール登録（ブラウザ内保存）と各占いの自動表示
 - `astro.js` … ホロスコープ（天体位置の計算・出生図）。結果は要約→テーマ別の読み解き→詳しいデータの順（文章は `data-detail.js` の `HORO_READ`）
+- `sogo.js` … 総合鑑定（各占いの結果を `sogoFacts()` で集め、共通する性質・二面性・今年の流れを `sogoReport()` で文章化。将来 AI 連携するときは `sogoFacts()` の結果を渡す）
 - `mbti.js` … 16タイプ性格診断
 - `mbti-art.js` … 16タイプ診断結果のキャラクターイラスト（オリジナルSVG）
 - `kanji-strokes.js` … 姓名判断用の画数表（Unicode Unihan の日本語字形の画数から抽出）

@@ -83,6 +83,7 @@
     <section id="tools" class="section">
       <nav class="tabs" role="tablist">
         <button class="tab active" data-tab="tarot" role="tab">タロット</button>
+        <button class="tab" data-tab="sogo" role="tab">総合鑑定</button>
         <button class="tab" data-tab="zodiac" role="tab">星座占い</button>
         <button class="tab" data-tab="horoscope" role="tab">ホロスコープ</button>
         <button class="tab" data-tab="numerology" role="tab">数秘術</button>
@@ -297,6 +298,18 @@
         </form>
         <div class="result" id="seimei-result" hidden></div>
       </div>
+      <!-- 総合鑑定 -->
+      <div id="sogo" class="panel">
+        <h2>総合鑑定</h2>
+        <p class="lead">星座・ホロスコープ・数秘術・九星気学・四柱推命・算命学・16タイプ診断の結果を突き合わせ、複数の占いが共通して示すあなたの性質と、今年の流れを読み解きます。</p>
+        <form class="form" id="sogo-form">
+          <label>生年月日 <input type="date" class="birth-input" id="sogo-birth" required></label>
+          <label>生まれた時刻（任意） <input type="time" id="sogo-time"></label>
+          <button class="btn" type="submit">鑑定する</button>
+        </form>
+        <div class="result" id="sogo-result" hidden></div>
+      </div>
+
       <!-- ホロスコープ -->
       <div id="horoscope" class="panel">
         <h2>ホロスコープ（出生図）</h2>
@@ -350,6 +363,7 @@
   <script src="/astro.js"></script>
   <script src="/mbti-art.js"></script>
   <script src="/mbti.js"></script>
+  <script src="/sogo.js"></script>
   <script src="/profile.js"></script>
 </body>
 </html>

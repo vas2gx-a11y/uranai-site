@@ -50,6 +50,16 @@ const TYPES = {
   ESFP: { name: "盛り上げ役", desc: "明るく陽気で、その場を一瞬で楽しくするエンターテイナー。人と楽しさを分かち合うのが大好きです。", strengths: ["明るさと社交性", "共感力", "楽しむ天才"], weaknesses: ["計画性に欠ける", "嫌なことを後回しにしがち"], work: "接客・エンタメ・販売・イベント", love: "一緒にいて楽しい恋人。感情表現がストレートで、愛情たっぷり。" },
 };
 
+// 回答（-2〜2 の配列）から各指標の点数とタイプコードを出す。同点（0）の場合は右側（I・N・F・P）とする
+function typeScore(answers) {
+  const score = { EI: 0, SN: 0, TF: 0, JP: 0 };
+  TYPE_QUESTIONS.forEach((q, i) => {
+    score[q.axis] += q.dir === AXIS_LABEL[q.axis][0][0] ? answers[i] : -answers[i];
+  });
+  const code = Object.keys(score).map((ax) => (score[ax] > 0 ? AXIS_LABEL[ax][0][0] : AXIS_LABEL[ax][1][0])).join("");
+  return { score, code };
+}
+
 // 相性が良いとされる組み合わせ：E/I と J/P が逆で、S/N が同じタイプ
 const flip = (c, a, b) => (c === a ? b : a);
 function goodMatches(code) {
@@ -79,13 +89,8 @@ function goodMatches(code) {
 
   form.addEventListener("submit", (e) => {
     e.preventDefault();
-    const score = { EI: 0, SN: 0, TF: 0, JP: 0 };
-    TYPE_QUESTIONS.forEach((q, i) => {
-      const v = Number(form.querySelector(`input[name="q${i}"]:checked`).value);
-      score[q.axis] += q.dir === AXIS_LABEL[q.axis][0][0] ? v : -v;
-    });
-    // 各指標 5問 × 最大2点 = ±10。同点（0）の場合は右側（I・N・F・P）とする
-    const code = Object.keys(score).map((ax) => (score[ax] > 0 ? AXIS_LABEL[ax][0][0] : AXIS_LABEL[ax][1][0])).join("");
+    // 各指標 5問 × 最大2点 = ±10
+    const { score, code } = typeScore(TYPE_QUESTIONS.map((_, i) => Number(form.querySelector(`input[name="q${i}"]:checked`).value)));
     const t = TYPES[code];
     const bars = Object.entries(score).map(([ax, v]) => {
       const pct = Math.round(50 + v * 5); // 左側の割合

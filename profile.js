@@ -105,6 +105,7 @@ const AUTO_RUN = {
   horoscope: (p) => { pfSetVal("horo-birth", p.birth); pfSetVal("horo-time", p.time || ""); pfSetVal("horo-pref", p.pref ?? ""); pfSubmit("horo-form"); },
   seimei: (p) => { if (!p.sei || !p.mei) return; pfSetVal("seimei-sei", p.sei); pfSetVal("seimei-mei", p.mei); pfSubmit("seimei-form"); },
   compat: (p) => { pfSetVal("compat-a", p.birth); pfSetVal("match-birth", p.birth); pfSubmit("match-form"); }, // 相性占いはお相手の入力が必要なので、相性のいい生年月日だけ自動で探す
+  sogo: (p) => { pfSetVal("sogo-birth", p.birth); pfSetVal("sogo-time", p.time || ""); pfSubmit("sogo-form"); },
   type16: (p) => {
     if (!p.type16) return;
     const form = document.getElementById("type-form");
