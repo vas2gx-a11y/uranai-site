@@ -387,3 +387,53 @@ details.card summary { cursor: pointer; color: var(--gold); }
 .num-section.today-advice { border-left-color: #69f0ae; background: rgba(105, 240, 174, 0.06); padding: 12px 14px; border-radius: 0 8px 8px 0; }
 .num-features { margin: 18px 0; }
 .num-features .feature-box { background: rgba(255, 255, 255, 0.03); border: 1px solid var(--border); border-radius: 10px; padding: 12px 16px; }
+
+/* ---- ホロスコープ ---- */
+.chart-wrap { display: flex; justify-content: center; margin: 12px 0; }
+.chart { width: 100%; max-width: 360px; height: auto; }
+.ch-ring { fill: none; stroke: var(--border); stroke-width: 1; }
+.ch-line { stroke: var(--border); stroke-width: 1; }
+.ch-axis { stroke: var(--gold); stroke-width: 1.2; stroke-dasharray: 4 3; }
+.ch-asp { stroke-width: 1; opacity: .7; }
+.ch-dot { fill: var(--text); }
+.ch-sign, .ch-planet, .ch-label { text-anchor: middle; dominant-baseline: central; font-family: "Noto Sans JP", "Segoe UI Symbol", "Apple Symbols", sans-serif; }
+.ch-sign { font-size: 15px; }
+.el-火 { fill: #ff8a73; } .el-地 { fill: #c9a35c; } .el-風 { fill: #8fd0ff; } .el-水 { fill: #6f8cff; }
+.ch-planet { font-size: 16px; fill: var(--gold); }
+.ch-label { font-size: 10px; fill: var(--gold); }
+.planet-table { width: 100%; border-collapse: collapse; font-size: .9rem; margin: 12px 0 4px; }
+.planet-table th, .planet-table td { border-bottom: 1px solid var(--border); padding: 6px; text-align: left; }
+.planet-table th { color: var(--muted); font-weight: 400; font-size: .8rem; }
+.retro { color: #ff7aa2; font-size: .8rem; }
+
+/* ---- 16タイプ性格診断 ---- */
+.type-form { text-align: left; }
+.tq { border: 1px solid var(--border); border-radius: 12px; padding: 12px 14px; margin: 0 0 10px; background: var(--card); }
+.tq legend { padding: 0; font-size: .95rem; float: left; width: 100%; margin-bottom: 10px; }
+.tq-no { color: var(--gold); font-weight: 700; margin-right: 4px; }
+.tq-scale { clear: both; display: flex; align-items: center; justify-content: center; gap: 10px; }
+.tq-scale label { cursor: pointer; display: flex; align-items: center; justify-content: center; width: 36px; height: 36px; }
+.tq-scale input { position: absolute; opacity: 0; }
+.tq-dot { display: block; border-radius: 50%; border: 2px solid var(--border); transition: background .15s, border-color .15s; }
+.tq-dot.d0, .tq-dot.d4 { width: 32px; height: 32px; }
+.tq-dot.d1, .tq-dot.d3 { width: 24px; height: 24px; }
+.tq-dot.d2 { width: 16px; height: 16px; }
+.tq-dot.d0, .tq-dot.d1 { border-color: var(--accent); }
+.tq-dot.d3, .tq-dot.d4 { border-color: #b0476b; }
+.tq-scale input:checked + .d0, .tq-scale input:checked + .d1 { background: var(--accent); }
+.tq-scale input:checked + .d2 { background: var(--muted); border-color: var(--muted); }
+.tq-scale input:checked + .d3, .tq-scale input:checked + .d4 { background: #b0476b; }
+.tq-scale input:focus-visible + .tq-dot { outline: 2px solid var(--gold); outline-offset: 2px; }
+.tq-end { font-size: .75rem; color: var(--muted); white-space: nowrap; }
+.type-submit { text-align: center; margin-top: 16px; }
+.type-code { font-family: "Shippori Mincho", serif; letter-spacing: .15em; color: var(--gold); }
+.type-axes { display: grid; gap: 8px; margin: 12px 0 16px; }
+.type-axis { display: grid; grid-template-columns: 1fr 2fr 1fr; gap: 8px; align-items: center; font-size: .78rem; color: var(--muted); }
+.type-axis span:last-child { text-align: right; }
+.type-axis .on { color: var(--text); font-weight: 500; }
+.type-bar { height: 8px; background: var(--border); border-radius: 999px; overflow: hidden; }
+.type-bar span { display: block; height: 100%; background: linear-gradient(90deg, var(--accent), var(--gold)); }
+@media (max-width: 480px) {
+  .type-axis { grid-template-columns: 1fr; text-align: center; gap: 2px; }
+  .type-axis span:last-child { text-align: center; }
+}

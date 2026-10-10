@@ -8,6 +8,8 @@
 - `data.js` … 占いの文章データ
 - `koyomi.js` … 干支・節入り・旧暦の計算
 - `eastern.js` … 算命学・紫微斗数・宿曜・易・姓名判断、四柱推命の命式
+- `astro.js` … ホロスコープ（天体位置の計算・出生図）
+- `mbti.js` … 16タイプ性格診断
 - `kanji-strokes.js` … 姓名判断用の画数表（Unicode Unihan の日本語字形の画数から抽出）
 - `column/` … コラム記事、`terms.html` などフッターのページ
 - コラムの `numerology.html`・`tarot.html` は `data.js` の内容から生成した静的HTML

@@ -3,8 +3,8 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>星読みの部屋｜無料のタロット・星座占い・数秘術・四柱推命・姓名判断</title>
-  <meta name="description" content="タロット（1枚・3枚引き）、星座占い、数秘術、四柱推命、算命学、紫微斗数、宿曜、易、姓名判断、おみくじ、相性占い、ルーン、九星気学、夢占いが無料で楽しめる総合占いサイト。">
+  <title>星読みの部屋｜無料のタロット・星座占い・ホロスコープ・四柱推命・姓名判断</title>
+  <meta name="description" content="タロット（1枚・3枚引き）、星座占い、ホロスコープ、数秘術、四柱推命、算命学、紫微斗数、宿曜、易、姓名判断、おみくじ、相性占い、ルーン、九星気学、夢占い、16タイプ性格診断が無料で楽しめる総合占いサイト。">
   <meta property="og:title" content="星読みの部屋｜無料の総合占いサイト">
   <meta property="og:description" content="タロット・星座占い・数秘術・四柱推命・おみくじ・相性占い・ルーン・九星気学・夢占い">
   <meta property="og:type" content="website">
@@ -56,6 +56,7 @@
       <div class="menu-grid">
         <a class="menu-item" href="#tarot"><span>🃏</span>タロット<small>1枚引き・3枚引き</small></a>
         <a class="menu-item" href="#zodiac"><span>♈</span>星座占い<small>今日・今週・今月</small></a>
+        <a class="menu-item" href="#horoscope"><span>🪐</span>ホロスコープ<small>出生図で読む本当のあなた</small></a>
         <a class="menu-item" href="#numerology"><span>🔢</span>数秘術<small>あなたの運命数</small></a>
         <a class="menu-item" href="#compat"><span>💞</span>相性占い<small>ふたりの相性</small></a>
         <a class="menu-item" href="#rune"><span>ᚱ</span>ルーン占い<small>古代文字のお告げ</small></a>
@@ -72,6 +73,10 @@
         <a class="menu-item" href="#omikuji"><span>⛩️</span>おみくじ<small>今日のお告げと運勢</small></a>
         <a class="menu-item" href="#seimei"><span>✍</span>姓名判断<small>名前の画数で読む運勢</small></a>
       </div>
+      <h3 class="menu-group">性格診断</h3>
+      <div class="menu-grid">
+        <a class="menu-item" href="#type16"><span>🧩</span>16タイプ性格診断<small>20問でわかるあなたのタイプ</small></a>
+      </div>
     </section>
 
     <!-- 各占い -->
@@ -79,6 +84,7 @@
       <nav class="tabs" role="tablist">
         <button class="tab active" data-tab="tarot" role="tab">タロット</button>
         <button class="tab" data-tab="zodiac" role="tab">星座占い</button>
+        <button class="tab" data-tab="horoscope" role="tab">ホロスコープ</button>
         <button class="tab" data-tab="numerology" role="tab">数秘術</button>
         <button class="tab" data-tab="compat" role="tab">相性占い</button>
         <button class="tab" data-tab="rune" role="tab">ルーン</button>
@@ -91,6 +97,7 @@
         <button class="tab" data-tab="eki" role="tab">易</button>
         <button class="tab" data-tab="omikuji" role="tab">おみくじ</button>
         <button class="tab" data-tab="seimei" role="tab">姓名判断</button>
+        <button class="tab" data-tab="type16" role="tab">16タイプ診断</button>
       </nav>
 
       <!-- タロット -->
@@ -277,6 +284,33 @@
         </form>
         <div class="result" id="seimei-result" hidden></div>
       </div>
+      <!-- ホロスコープ -->
+      <div id="horoscope" class="panel">
+        <h2>ホロスコープ（出生図）</h2>
+        <p class="lead">生まれた瞬間の太陽・月・惑星の位置から、あなたの本質を読み解きます。</p>
+        <form class="form" id="horo-form">
+          <label>生年月日 <input type="date" class="birth-input" id="horo-birth" required></label>
+          <label>生まれた時刻（任意） <input type="time" id="horo-time"></label>
+          <label>出生地 <select id="horo-pref"></select></label>
+          <button class="btn" type="submit">チャートを作る</button>
+        </form>
+        <p class="sub">時刻と出生地を入れると、アセンダント（第一印象）とハウスも表示されます。</p>
+        <div class="result" id="horo-result" hidden></div>
+      </div>
+
+      <!-- 16タイプ性格診断 -->
+      <div id="type16" class="panel">
+        <h2>16タイプ性格診断</h2>
+        <p class="lead">20の質問に直感で答えてください。あなたの性格タイプを16タイプから診断します。</p>
+        <form id="type-form" class="type-form">
+          <div class="type-questions"></div>
+          <div class="type-submit">
+            <p class="sub" id="type-progress">0 / 20 問回答</p>
+            <button class="btn" type="submit">診断する</button>
+          </div>
+        </form>
+        <div class="result" id="type-result" hidden></div>
+      </div>
     </section>
 
     <!-- コラム -->
@@ -298,5 +332,7 @@
   <script src="/app.js"></script>
   <script src="/kanji-strokes.js"></script>
   <script src="/eastern.js"></script>
+  <script src="/astro.js"></script>
+  <script src="/mbti.js"></script>
 </body>
 </html>
