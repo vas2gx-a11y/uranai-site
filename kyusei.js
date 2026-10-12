@@ -103,20 +103,93 @@ function meetDirs(center, honmei, branch) {
 }
 
 function meetHtml(periods, honmei) {
+  const byPalace = {};
   const rows = periods.map(([label, center, branch]) => {
     const ms = meetDirs(center, honmei, branch);
+    ms.forEach((m) => (byPalace[m.palace] ||= []).push(label));
     const text = ms.length
       ? ms.map((m) => `<strong>${PALACES[m.palace].dir}</strong>（${STAR_NAMES[m.star]}：${MEET_STARS[m.star]}）`).join("、")
       : "なし（吉方位へのお出かけで運気を整えて）";
     return `<p class="ky-dirs"><span class="good-label">${label}</span> ${text}</p>`;
   }).join("");
+  lastMeet = Object.entries(byPalace).map(([palace, labels]) => ({ palace: Number(palace), labels }));
   return `
     <div class="num-section highlight">
       <h4>✦ 出会いに良い方角</h4>
       <p>九星気学では、<strong>四緑木星</strong>は良縁や結婚、<strong>七赤金星</strong>は恋愛や楽しい出会いを運ぶ星とされます。これらの星が吉方位に入っている方角へ出かけると、ご縁に恵まれやすくなります。</p>
       ${rows}
+      <div id="meet-places">${placesHtml()}</div>
     </div>`;
 }
+
+// ---- 家から見た出会いの方角の街（位置はこの端末にのみ保存し、外部には送信しない） ----
+const HOME_KEY = "uranai-home";
+const loadHome = () => { try { return JSON.parse(localStorage.getItem(HOME_KEY)); } catch { return null; } };
+const saveHome = (h) => { try { localStorage.setItem(HOME_KEY, JSON.stringify(h)); } catch {} };
+
+const toRad = (d) => (d * Math.PI) / 180;
+function distanceKm(a, b) {
+  const h = Math.sin(toRad(b[0] - a[0]) / 2) ** 2 + Math.cos(toRad(a[0])) * Math.cos(toRad(b[0])) * Math.sin(toRad(b[1] - a[1]) / 2) ** 2;
+  return 12742 * Math.asin(Math.sqrt(h));
+}
+function bearing(a, b) {
+  const y = Math.sin(toRad(b[1] - a[1])) * Math.cos(toRad(b[0]));
+  const x = Math.cos(toRad(a[0])) * Math.sin(toRad(b[0])) - Math.sin(toRad(a[0])) * Math.cos(toRad(b[0])) * Math.cos(toRad(b[1] - a[1]));
+  return mod((Math.atan2(y, x) * 180) / Math.PI, 360);
+}
+// 方位の範囲（真北基準。東西南北は30°、四隅は60°）→ 宮
+const SECTORS = [[15, 1], [75, 8], [105, 3], [165, 4], [195, 9], [255, 2], [285, 7], [345, 6]];
+const palaceOfBearing = (b) => (SECTORS.find(([end]) => b < end) || [0, 1])[1];
+const nearestPlace = (pos) => PLACES.reduce((best, pl) => (distanceKm(pos, [pl[1], pl[2]]) < distanceKm(pos, [best[1], best[2]]) ? pl : best));
+
+const BANDS = [["近場", 0, 20], ["日帰り", 20, 150], ["旅行", 150, Infinity]];
+let lastMeet = []; // [{ palace, labels }]
+
+function placesHtml() {
+  const home = loadHome();
+  const controls = `
+    <div class="meet-home">
+      <p class="sub">家（出発地）：<strong>${home ? escapeHtml(home.label) : "未設定"}</strong></p>
+      <button type="button" class="btn ghost small" id="home-geo">📍 現在地を使う</button>
+      <select id="home-place"><option value="">近くの街を選ぶ</option>${PLACES.map(([n], i) => `<option value="${i}">${n}</option>`).join("")}</select>
+    </div>`;
+  if (!home) return `${controls}<p class="sub">家の場所を設定すると、出会いの方角にある街を表示します。位置はこの端末にのみ保存され、外部には送信されません。</p>`;
+  if (!lastMeet.length) return controls;
+  const pos = [home.lat, home.lon];
+  const found = PLACES.map(([n, la, lo]) => ({ n, d: distanceKm(pos, [la, lo]), p: palaceOfBearing(bearing(pos, [la, lo])) })).filter((x) => x.d >= 1);
+  const groups = lastMeet.map(({ palace, labels }) => {
+    const inDir = found.filter((x) => x.p === palace).sort((a, b) => a.d - b.d);
+    const lines = BANDS.map(([name, lo, hi]) => {
+      const hit = inDir.filter((x) => x.d >= lo && x.d < hi).slice(0, 3);
+      return hit.length ? `<li><span class="sub">${name}</span> ${hit.map((x) => `${x.n}（${Math.round(x.d)}km）`).join("、")}</li>` : "";
+    }).join("");
+    return `<p class="ky-dirs"><span class="good-label">${PALACES[palace].dir}</span> ${labels.join("・")}の出会いの方角</p>
+      <ul class="meet-list">${lines || `<li class="sub">この方角に登録された街はありません。家から${PALACES[palace].dir}へ散歩してみて。</li>`}</ul>`;
+  }).join("");
+  return `${controls}${groups}<p class="sub">※ 方角は真北基準で、東西南北は30°、それ以外は60°の範囲で判定しています。年の方角は引っ越しや遠出、月は旅行、日は日帰りやデートの目安に。</p>`;
+}
+
+function setHome(h) {
+  saveHome(h);
+  const el = document.getElementById("meet-places");
+  if (el) el.innerHTML = placesHtml();
+}
+document.addEventListener("click", (e) => {
+  if (!e.target.closest("#home-geo")) return;
+  if (!navigator.geolocation) { alert("この端末では現在地を取得できません。近くの街を選んでください。"); return; }
+  navigator.geolocation.getCurrentPosition(
+    ({ coords }) => {
+      const pos = [Math.round(coords.latitude * 100) / 100, Math.round(coords.longitude * 100) / 100];
+      setHome({ lat: pos[0], lon: pos[1], label: `現在地（${nearestPlace(pos)[0]}付近）` });
+    },
+    () => alert("現在地を取得できませんでした。近くの街を選んでください。"),
+  );
+});
+document.addEventListener("change", (e) => {
+  if (e.target.id !== "home-place" || e.target.value === "") return;
+  const [n, lat, lon] = PLACES[Number(e.target.value)];
+  setHome({ lat, lon, label: `${n}付近` });
+});
 
 function boardHtml(center, honmei, dirs) {
   return `<div class="ky-board">${GRID_ORDER.map((p) => {
