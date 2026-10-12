@@ -95,6 +95,21 @@ function directions(center, honmei, branch) {
 
 // 出会い運：良縁の四緑木星・恋愛の七赤金星が吉方位に入る方角
 const MEET_STARS = { 4: "良縁・結婚", 7: "恋愛・楽しい出会い" };
+const MEET_STAR_TEXT = {
+  4: "四緑木星は「縁」をつかさどる星。信頼できる人との出会いや、紹介・お見合いなど結婚につながるご縁を運びます。",
+  7: "七赤金星は「喜び」をつかさどる星。会話が弾む相手や、食事や遊びの場での楽しい恋のきっかけを運びます。",
+};
+// 方角（宮）ごとの出会いの傾向・場所・色・開運アクション
+const MEET_PALACE = {
+  1: { type: "心の深いところで通じ合う縁", text: "表に出にくい、しっとりとした出会いの方角。ゆっくり時間をかけて信頼を育てる関係や、悩みを打ち明け合える相手と出会いやすいでしょう。", spots: "水辺・温泉・夜のバーやラウンジ", color: "白・黒", action: "温泉や水辺でくつろぐ、夜にゆっくり語り合う" },
+  2: { type: "穏やかで家庭的な縁", text: "安心感のある、地に足のついた出会いの方角。職場や地元、習い事など身近な場で、誠実で家庭的な相手と出会いやすいでしょう。", spots: "地元の商店街・農園・家庭料理の店", color: "黄・茶", action: "手料理をふるまう、土や植物にふれる" },
+  3: { type: "新しく始まる縁", text: "これまでにない新しい出会いの方角。初対面の人と打ち解けやすく、イベントやSNSなどをきっかけに年下や若々しい相手と縁がつながりやすいでしょう。", spots: "ライブ会場・音楽イベント・朝の公園", color: "青", action: "朝に出かける、音楽を楽しむ、自分から声をかける" },
+  4: { type: "結婚につながる良縁", text: "良縁の定位にあたる、出会い運の王道の方角。人からの紹介や遠方の人との縁が整い、信頼から結婚へと進む出会いが期待できます。", spots: "駅・空港・花屋・旅行先", color: "緑", action: "香りのよいものを身につける、紹介の誘いに乗る" },
+  6: { type: "尊敬できる人との縁", text: "格式や目上の人に縁のある方角。仕事や趣味を通じて、頼りがいのある相手や社会的に信頼される人と出会いやすいでしょう。", spots: "神社仏閣・高級ホテル・スポーツ観戦", color: "白・金", action: "神社にお参りする、きちんとした服装で出かける" },
+  7: { type: "恋の喜びにあふれる縁", text: "恋愛と楽しみの定位にあたる方角。食事やおしゃべりの場で自然と距離が縮まり、笑顔の絶えない恋が始まりやすいでしょう。", spots: "レストラン・カフェ・飲み会・パーティー", color: "ピンク・金", action: "おいしいものを食べる、笑顔で会話を楽しむ" },
+  8: { type: "人生を変える縁", text: "変化と節目の方角。昔の知り合いとの再会や、家族ぐるみの付き合いから縁が深まるなど、人生の転機になる出会いが起こりやすいでしょう。", spots: "山・高台・展望台・ホテル", color: "黄・白", action: "高いところから景色を眺める、古い友人に連絡する" },
+  9: { type: "ひと目で惹かれ合う縁", text: "華やかさと美の方角。一目惚れや、才能・センスに惹かれる出会いが起こりやすく、あなた自身の魅力も輝いて見えます。", spots: "美術館・映画館・美容室・華やかな街", color: "紫・赤", action: "おしゃれをして出かける、美しいものにふれる" },
+};
 function meetDirs(center, honmei, branch) {
   const dirs = directions(center, honmei, branch);
   return Object.keys(MEET_STARS).map(Number)
@@ -106,19 +121,30 @@ function meetHtml(periods, honmei) {
   const byPalace = {};
   const rows = periods.map(([label, center, branch]) => {
     const ms = meetDirs(center, honmei, branch);
-    ms.forEach((m) => (byPalace[m.palace] ||= []).push(label));
+    ms.forEach((m) => {
+      const g = (byPalace[m.palace] ||= { labels: [], stars: [] });
+      g.labels.push(label);
+      if (!g.stars.includes(m.star)) g.stars.push(m.star);
+    });
     const text = ms.length
       ? ms.map((m) => `<strong>${PALACES[m.palace].dir}</strong>（${STAR_NAMES[m.star]}：${MEET_STARS[m.star]}）`).join("、")
       : "なし（吉方位へのお出かけで運気を整えて）";
     return `<p class="ky-dirs"><span class="good-label">${label}</span> ${text}</p>`;
   }).join("");
-  lastMeet = Object.entries(byPalace).map(([palace, labels]) => ({ palace: Number(palace), labels }));
+  lastMeet = Object.entries(byPalace).map(([palace, g]) => ({ palace: Number(palace), ...g })).sort((a, b) => b.labels.length - a.labels.length);
   return `
     <div class="num-section highlight">
       <h4>✦ 出会いに良い方角</h4>
       <p>九星気学では、<strong>四緑木星</strong>は良縁や結婚、<strong>七赤金星</strong>は恋愛や楽しい出会いを運ぶ星とされます。これらの星が吉方位に入っている方角へ出かけると、ご縁に恵まれやすくなります。</p>
       ${rows}
       <div id="meet-places">${placesHtml()}</div>
+      <h4>✦ 吉方位の取り方</h4>
+      <ul class="meet-list">
+        <li><strong>今日の方角</strong>：デートや日帰りのお出かけに。目的地で3時間ほど過ごすと効果的とされます。</li>
+        <li><strong>今月の方角</strong>：旅行に。2泊以上すると、より強く運気を取り込めるといわれます。</li>
+        <li><strong>今年の方角</strong>：引っ越しや長期の滞在に。効果は長く続くとされます。</li>
+        <li>年・月・日の方角が重なるほど、出会いの力は強まります。距離は遠いほど効果が大きいとされます。</li>
+      </ul>
     </div>`;
 }
 
@@ -153,20 +179,37 @@ function placesHtml() {
       <button type="button" class="btn ghost small" id="home-geo">📍 現在地を使う</button>
       <select id="home-place"><option value="">近くの街を選ぶ</option>${PLACES.map(([n], i) => `<option value="${i}">${n}</option>`).join("")}</select>
     </div>`;
-  if (!home) return `${controls}<p class="sub">家の場所を設定すると、出会いの方角にある街を表示します。位置はこの端末にのみ保存され、外部には送信されません。</p>`;
-  if (!lastMeet.length) return controls;
-  const pos = [home.lat, home.lon];
-  const found = PLACES.map(([n, la, lo]) => ({ n, d: distanceKm(pos, [la, lo]), p: palaceOfBearing(bearing(pos, [la, lo])) })).filter((x) => x.d >= 1);
-  const groups = lastMeet.map(({ palace, labels }) => {
-    const inDir = found.filter((x) => x.p === palace).sort((a, b) => a.d - b.d);
-    const lines = BANDS.map(([name, lo, hi]) => {
-      const hit = inDir.filter((x) => x.d >= lo && x.d < hi).slice(0, 3);
-      return hit.length ? `<li><span class="sub">${name}</span> ${hit.map((x) => `${x.n}（${Math.round(x.d)}km）`).join("、")}</li>` : "";
-    }).join("");
-    return `<p class="ky-dirs"><span class="good-label">${PALACES[palace].dir}</span> ${labels.join("・")}の出会いの方角</p>
-      <ul class="meet-list">${lines || `<li class="sub">この方角に登録された街はありません。家から${PALACES[palace].dir}へ散歩してみて。</li>`}</ul>`;
+  const pos = home && [home.lat, home.lon];
+  const found = pos ? PLACES.map(([n, la, lo]) => ({ n, d: distanceKm(pos, [la, lo]), p: palaceOfBearing(bearing(pos, [la, lo])) })).filter((x) => x.d >= 1) : [];
+  const groups = lastMeet.map(({ palace, labels, stars }) => {
+    const mp = MEET_PALACE[palace];
+    let places = "";
+    if (pos) {
+      const inDir = found.filter((x) => x.p === palace).sort((a, b) => a.d - b.d);
+      const lines = BANDS.map(([name, lo, hi]) => {
+        const hit = inDir.filter((x) => x.d >= lo && x.d < hi).slice(0, 3);
+        return hit.length ? `<li><span class="sub">${name}</span> ${hit.map((x) => `${x.n}（${Math.round(x.d)}km）`).join("、")}</li>` : "";
+      }).join("");
+      places = `<p class="meet-label">家から${PALACES[palace].dir}にある街</p>
+        <ul class="meet-list">${lines || `<li class="sub">この方角に登録された街はありません。家から${PALACES[palace].dir}へ散歩してみて。</li>`}</ul>`;
+    }
+    return `
+      <div class="meet-dir">
+        <p class="ky-dirs"><span class="good-label">${PALACES[palace].dir}</span> <strong>${mp.type}</strong> <span class="sub">（${labels.join("・")}）</span></p>
+        <p>${mp.text}</p>
+        <p class="sub">${stars.map((s) => MEET_STAR_TEXT[s]).join("")}</p>
+        <ul class="meet-list">
+          <li><span class="sub">おすすめの場所</span> ${mp.spots}</li>
+          <li><span class="sub">ラッキーカラー</span> ${mp.color}</li>
+          <li><span class="sub">開運アクション</span> ${mp.action}</li>
+        </ul>
+        ${places}
+      </div>`;
   }).join("");
-  return `${controls}${groups}<p class="sub">※ 方角は真北基準で、東西南北は30°、それ以外は60°の範囲で判定しています。年の方角は引っ越しや遠出、月は旅行、日は日帰りやデートの目安に。</p>`;
+  const note = pos
+    ? `<p class="sub">※ 方角は真北基準で、東西南北は30°、それ以外は60°の範囲で判定しています。</p>`
+    : `<p class="sub">家の場所を設定すると、それぞれの方角にある街も表示します。位置はこの端末にのみ保存され、外部には送信されません。</p>`;
+  return `${controls}${groups}${note}`;
 }
 
 function setHome(h) {
