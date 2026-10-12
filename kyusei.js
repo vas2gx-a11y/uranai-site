@@ -93,6 +93,31 @@ function directions(center, honmei, branch) {
   return { bad, good };
 }
 
+// 出会い運：良縁の四緑木星・恋愛の七赤金星が吉方位に入る方角
+const MEET_STARS = { 4: "良縁・結婚", 7: "恋愛・楽しい出会い" };
+function meetDirs(center, honmei, branch) {
+  const dirs = directions(center, honmei, branch);
+  return Object.keys(MEET_STARS).map(Number)
+    .map((s) => ({ star: s, palace: palaceOf(s, center) }))
+    .filter((m) => dirs.good.includes(m.palace));
+}
+
+function meetHtml(periods, honmei) {
+  const rows = periods.map(([label, center, branch]) => {
+    const ms = meetDirs(center, honmei, branch);
+    const text = ms.length
+      ? ms.map((m) => `<strong>${PALACES[m.palace].dir}</strong>（${STAR_NAMES[m.star]}：${MEET_STARS[m.star]}）`).join("、")
+      : "なし（吉方位へのお出かけで運気を整えて）";
+    return `<p class="ky-dirs"><span class="good-label">${label}</span> ${text}</p>`;
+  }).join("");
+  return `
+    <div class="num-section highlight">
+      <h4>✦ 出会いに良い方角</h4>
+      <p>九星気学では、<strong>四緑木星</strong>は良縁や結婚、<strong>七赤金星</strong>は恋愛や楽しい出会いを運ぶ星とされます。これらの星が吉方位に入っている方角へ出かけると、ご縁に恵まれやすくなります。</p>
+      ${rows}
+    </div>`;
+}
+
 function boardHtml(center, honmei, dirs) {
   return `<div class="ky-board">${GRID_ORDER.map((p) => {
     const s = starAt(p, center);
@@ -148,6 +173,7 @@ document.getElementById("kyusei-form")?.addEventListener("submit", (e) => {
       <h4>✦ 吉方位とは</h4>
       <p>その期間に出かけたり引っ越したりすると運気が上がるとされる方角です。年と月の吉方位が重なる方角が特に良いとされます。表の<span class="good-label">緑</span>が吉方位、<span class="bad-label">赤</span>が凶方位、金色の枠があなたの星です。</p>
     </div>
+    ${meetHtml([["今年", ys, p.year % 12], ["今月", ms, p.month % 12], ["今日", ds, p.day % 12]], honmei)}
     ${periodHtml(`今年（${ty}年・${STAR_NAMES[ys]}の年）`, ys, honmei, p.year % 12)}
     ${periodHtml(`今月（${BRANCHES[p.month % 12]}月・${STAR_NAMES[ms]}の月）`, ms, honmei, p.month % 12)}
     ${periodHtml(`今日（${tm}月${td}日・${STAR_NAMES[ds]}の日）`, ds, honmei, p.day % 12)}
